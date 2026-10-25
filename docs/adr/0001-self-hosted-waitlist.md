@@ -1,6 +1,6 @@
 # 0001: One small self-hosted Rails waitlist for every product
 
-Date: 2026-10-25. Status: accepted, not yet deployed.
+Date: 2026-10-25. Status: accepted, deployed on 2026-10-25.
 
 ## Context
 
@@ -92,9 +92,9 @@ key.
 ## Consequences
 
 - One more small container and tunnel on prod, both capped.
-- Mail needs a sending account: SES in Frankfurt (what Chat with Work
-  already uses) with example.com added as a verified identity, or Forward
-  Email's SMTP for example.com. Until its credentials are on the host,
+- Mail goes through SES in Frankfurt (what Chat with Work
+  already uses), with example.com as a verified identity and a sending
+  user limited to it. Without its credentials on the host,
   nothing is sent.
 - GetWaitlist signups move with `bin/getwaitlist-pull` and
   `getwaitlist:import` (docs/migration.md): only verified people, as

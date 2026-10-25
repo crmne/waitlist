@@ -81,7 +81,8 @@ class SignupsController < PublicController
   end
 
   def origin_of(url)
-    uri = url.present? && URI.parse(url)
-    uri && "#{uri.scheme}://#{uri.host}#{":#{uri.port}" unless uri.port == uri.default_port}"
+    return if url.blank?
+    uri = URI.parse(url)
+    "#{uri.scheme}://#{uri.host}#{":#{uri.port}" unless uri.port == uri.default_port}"
   end
 end

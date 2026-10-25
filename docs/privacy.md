@@ -30,8 +30,8 @@ adjusted). For Acme, example.com/privacy:
 > don't confirm within seven days, it is deleted. The waitlist runs on our
 > own server at Hetzner in Nuremberg, Germany (waitlist.plenty.is); we don't
 > store your IP address or use cookies there. Cloudflare passes the request
-> to our server, and [Amazon Web Services EMEA SARL, from Frankfurt /
-> Forward Email LLC] delivers the confirmation email. The legal basis is
+> to our server, and Amazon Web Services EMEA SARL, from Frankfurt,
+> delivers the confirmation email. The legal basis is
 > your consent (Art. 6(1)(a) GDPR). Every email has a link to leave the list,
 > which deletes your details at once; you can also write to
 > hello@plenty.is. Once you are invited, your waitlist entry is deleted 90
@@ -53,7 +53,7 @@ GetWaitlist paragraphs in the German part):
 > Warteliste läuft auf unserem eigenen Server bei Hetzner in Nürnberg
 > (waitlist.plenty.is); dort speichern wir Ihre IP-Adresse nicht und setzen
 > keine Cookies. Cloudflare leitet die Anfrage an unseren Server weiter, und
-> [Amazon Web Services EMEA SARL, aus Frankfurt / Forward Email LLC] stellt
+> Amazon Web Services EMEA SARL, aus Frankfurt, stellt
 > die Bestätigungs-E-Mail zu. Rechtsgrundlage ist Ihre Einwilligung (Art. 6
 > Abs. 1 lit. a DSGVO). Jede E-Mail enthält einen Link, mit dem Sie die
 > Warteliste verlassen; Ihre Angaben werden dann sofort gelöscht. Sie können
@@ -61,6 +61,8 @@ GetWaitlist paragraphs in the German part):
 > auf der Warteliste 90 Tage später gelöscht; Ihre Lizenz ist in der
 > Datenschutzerklärung der App beschrieben.
 
-Pick one bracketed sender when the mail account is chosen
-(docs/deployment.md, "Mail"). If it is Forward Email, add that the provider
-is in the USA and the transfer rests on its standard contractual clauses.
+Mail goes through Amazon SES in Frankfurt (docs/deployment.md, "Mail").
+Amazon Web Services EMEA SARL is the AWS contracting party for EEA
+customers, and the AWS data processing addendum is part of its terms. Check
+that the AWS account's company details name the KG, as for the other
+processors in the privacy self-check.

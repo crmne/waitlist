@@ -85,7 +85,10 @@ class SignupFlowTest < ActionDispatch::IntegrationTest
   test "the hosted form may be framed only by the product's sites" do
     get "/p/acme?embed=1"
     assert_nil response.headers["X-Frame-Options"]
-    assert_includes response.headers["Content-Security-Policy"], "frame-ancestors 'self' https://example.com"
+    assert_includes response.headers["Content-Security-Policy"], "form-action 'self'; frame-ancestors 'self' https://example.com"
+    acme.update!(thanks_url: "https://example.com/thanks")
+    get "/p/acme"
+    assert_includes response.headers["Content-Security-Policy"], "form-action 'self' https://example.com;"
   end
 
   test "an unknown product is a 404" do
