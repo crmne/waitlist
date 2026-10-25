@@ -22,6 +22,7 @@ Rails.application.routes.draw do
     resources :signups, only: :destroy do
       member do
         post :approve
+        post :register_licence
         get :delete, action: :confirm_delete
       end
     end

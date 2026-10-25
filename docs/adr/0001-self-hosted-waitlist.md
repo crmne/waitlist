@@ -81,13 +81,19 @@ no candidate does: approval that issues a licence. Its parts:
 
 ## Licence keys
 
-Approving a Acme signup enqueues `ApprovalJob`, which calls
-`LicenceIssuers::AcmeLicence#issue`. It is a marked integration point that
-issues nothing yet. The licence-key work in licence-server fills it in:
-call licence-server on the internal Docker network with a shared token from
-tmpfs, idempotent per signup; licence-server delivers the key and owns
-revocation; this app stores only the reference it returns and never the
-key.
+Updated 2026-10-25 for licence-server's alpha licences (its ADR 0009). Keys
+are signed on Carmine's machine, never by a server. Approving a Acme
+signup enqueues `ApprovalJob`, which calls `LicenceIssuers::AcmeLicence`:
+`POST http://licence-server-origin:3000/internal/licences` over Kamal's
+`kamal` Docker network, with the shared bearer token from tmpfs and
+`{"email", "reference": "waitlist-signup-ID"}`. licence-server records the
+licence (idempotent on the reference) and answers its `licence_id`, which
+this app stores with the time (`licence_reference`, `licence_issued_at`);
+the admin then says "Key registered, waiting to be sent". Any other answer
+raises, the job retries with backoff, and the admin shows "Key not
+registered yet" with a "Try again" button. Carmine's `bin/issue-licence
+--pending` signs and emails the key. This app never sees a key, and
+licence-server refuses the route through the public tunnel.
 
 ## Consequences
 

@@ -10,8 +10,8 @@ Why it exists and what it replaced: [ADR 0001](docs/adr/0001-self-hosted-waitlis
   form or JSON to `POST /p/PRODUCT/signups` with `email` and optional
   `answers[QUESTION]`.
 - Admin: `/admin` (HTTP Basic, user `admin`)
-- Acme licence keys on approval: `app/models/licence_issuers/acme_licence.rb`
-  (integration point)
+- Acme licences on approval: `app/models/licence_issuers/acme_licence.rb`
+  registers one with licence-server; Carmine signs and emails the key
 - [Deployment](docs/deployment.md), [privacy and retention](docs/privacy.md),
   [moving off GetWaitlist](docs/migration.md)
 

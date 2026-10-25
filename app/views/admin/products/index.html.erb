@@ -1,6 +1,6 @@
 <h1>Waitlists</h1>
 <table>
-  <thead><tr><th>Product</th><th class="n">Waiting</th><th class="n">Unconfirmed</th><th class="n">Approved</th><th class="n">Licence pending</th><th></th></tr></thead>
+  <thead><tr><th>Product</th><th class="n">Waiting</th><th class="n">Unconfirmed</th><th class="n">Approved</th><th class="n">Key not registered</th><th></th></tr></thead>
   <tbody>
     <% @products.each do |product| %>
       <% unconfirmed, waiting, approved, pending = @counts.fetch(product.id, [0, 0, 0, 0]) %>

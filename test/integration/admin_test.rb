@@ -1,6 +1,18 @@
 require "test_helper"
 
 class AdminTest < ActionDispatch::IntegrationTest
+  FakeIssuer = Struct.new(:result) do
+    def issue(_signup) = result.is_a?(Exception) ? raise(result) : result
+  end
+
+  def with_issuer(issuer)
+    original = LicenceIssuers.method(:for)
+    LicenceIssuers.define_singleton_method(:for) { |_name| issuer }
+    yield
+  ensure
+    LicenceIssuers.define_singleton_method(:for, original)
+  end
+
   test "the admin needs the password, and is closed without one" do
     get "/admin"
     assert_response :unauthorized
@@ -32,8 +44,11 @@ class AdminTest < ActionDispatch::IntegrationTest
       post "/admin/signups/#{first.id}/approve", headers: admin_headers
     end
     assert first.reload.approved_at
-    perform_enqueued_jobs
-    assert_nil first.reload.licence_issued_at, "the licence integration point issues nothing yet"
+    with_issuer(FakeIssuer.new("0b7e4f7a-8f6c-4c1e-9a43-2f1d8f0b5c11")) { perform_enqueued_jobs }
+    assert_equal "0b7e4f7a-8f6c-4c1e-9a43-2f1d8f0b5c11", first.reload.licence_reference
+    assert first.licence_issued_at
+    get "/admin/products/acme?status=approved", headers: admin_headers
+    assert_match "Key registered, waiting to be sent", response.body
 
     get "/admin/products/acme/export", headers: admin_headers
     assert_equal "text/csv", response.media_type
@@ -53,5 +68,23 @@ class AdminTest < ActionDispatch::IntegrationTest
     pending = acme.signups.create!(email: "pending@example.com", consent_text: "test")
     post "/admin/signups/#{pending.id}/approve", headers: admin_headers
     assert_nil pending.reload.approved_at
+  end
+
+  test "an approval whose key wasn't registered can be tried again" do
+    signup = confirmed_signup("dj@example.com")
+    post "/admin/signups/#{signup.id}/approve", headers: admin_headers
+    clear_enqueued_jobs
+    with_issuer(FakeIssuer.new(LicenceIssuers::AcmeLicence::Error.new("down"))) do
+      ApprovalJob.perform_now(signup)
+    end
+    assert_nil signup.reload.licence_issued_at
+
+    get "/admin/products/acme?status=approved", headers: admin_headers
+    assert_match "Key not registered yet", response.body
+    assert_enqueued_with(job: ApprovalJob, args: [signup]) do
+      post "/admin/signups/#{signup.id}/register_licence", headers: admin_headers
+    end
+    with_issuer(FakeIssuer.new("0b7e4f7a-8f6c-4c1e-9a43-2f1d8f0b5c11")) { perform_enqueued_jobs }
+    assert signup.reload.licence_issued_at
   end
 end

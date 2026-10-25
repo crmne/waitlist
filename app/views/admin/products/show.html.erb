@@ -24,8 +24,13 @@
         <td><div class="actions">
           <% if signup.status == "waiting" %>
             <%= button_to "Approve", approve_admin_signup_path(signup), method: :post %>
+          <% elsif signup.approved_at && !@product.approval %>
+            <span class="tag">Approved</span>
+          <% elsif signup.licence_issued_at %>
+            <span class="tag">Key registered, waiting to be sent</span>
           <% elsif signup.approved_at %>
-            <span class="tag"><%= signup.licence_issued_at ? "Licence issued" : (@product.approval ? "Licence not issued yet" : "Approved") %></span>
+            <span class="tag">Key not registered yet</span>
+            <%= button_to "Try again", register_licence_admin_signup_path(signup), method: :post %>
           <% end %>
           <a href="<%= delete_admin_signup_path(signup) %>" class="quiet">Delete</a>
         </div></td>
