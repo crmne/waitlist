@@ -3,7 +3,7 @@ require "test_helper"
 class JoinedNotificationTest < ActionDispatch::IntegrationTest
   def sign_up_and_confirm(email = "dj@example.com")
     perform_enqueued_jobs do
-      post "/p/acme/signups", params: { email:, answers: { "What do you play on most?" => "Traktor" } }, as: :json
+      post "/p/acme/signups", params: { elapsed_ms: 5000, email:, answers: { "What do you play on most?" => "Traktor" } }, as: :json
     end
     signup = acme.signups.find_by!(email:)
     ActionMailer::Base.deliveries.clear

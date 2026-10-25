@@ -5,6 +5,10 @@ class Signup < ApplicationRecord
     "I can leave the list at any time."
 
   belongs_to :product
+  belongs_to :referred_by, class_name: "Signup", optional: true
+  has_many :referrals, class_name: "Signup", foreign_key: :referred_by_id, dependent: :nullify, inverse_of: :referred_by
+
+  before_create :assign_referral_code
 
   normalizes :email, with: ->(email) { email.to_s.strip.downcase }
 
@@ -37,10 +41,10 @@ class Signup < ApplicationRecord
 
   def confirmed? = confirmed_at.present?
 
-  # 1 for the first person waiting, by signup time.
+  # 1 for the first person waiting (Product#line).
   def place_in_line
     return unless confirmed? && approved_at.nil?
-    product.signups.waiting.where("created_at < ? OR (created_at = ? AND id < ?)", created_at, created_at, id).count + 1
+    product.line.index { |signup| signup.id == id }&.+(1)
   end
 
   # Only someone confirming through the link gets here; imports set
@@ -51,7 +55,27 @@ class Signup < ApplicationRecord
       update!(confirmed_at: Time.current)
       Suppression.lift(product, email)
     end
+    credit_referrer
     NotifyJoinedJob.perform_later(self) if product.notify_address
+  end
+
+  # Confirmed referrals made here, plus credit carried over from GetWaitlist.
+  def effective_referrals = referrals_count + imported_referrals
+
+  # The address minus any +tag, for spotting self-referrals.
+  def self.base_address(email)
+    local, domain = email.to_s.downcase.split("@", 2)
+    "#{local.to_s.split("+", 2).first}@#{domain}"
+  end
+
+  # The person whose link brought a new signup here, or nil: someone
+  # confirmed on this product, not the same address (ignoring +tags), and
+  # never for an address that left before (so leaving and rejoining can't
+  # be used to count twice).
+  def self.referrer_for(product, code, email)
+    return if code.blank? || Suppression.suppressed?(product, email)
+    referrer = product.signups.confirmed.find_by(referral_code: code.to_s.strip)
+    referrer unless referrer.nil? || base_address(referrer.email) == base_address(email)
   end
 
   def can_send_confirmation?
@@ -74,5 +98,21 @@ class Signup < ApplicationRecord
       Suppression.add(product, email)
       destroy!
     end
+  end
+
+  private
+
+  def assign_referral_code
+    self.referral_code ||= loop do
+      code = SecureRandom.alphanumeric(10)
+      break code unless Signup.exists?(product_id:, referral_code: code)
+    end
+  end
+
+  # A referral counts once, when the referred person confirms, and only if
+  # the referrer is still here and confirmed.
+  def credit_referrer
+    return unless referred_by_id
+    Signup.confirmed.where(id: referred_by_id).update_all("referrals_count = referrals_count + 1")
   end
 end

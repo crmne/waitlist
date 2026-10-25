@@ -10,6 +10,7 @@ class Product < ApplicationRecord
   validates :name, :site_url, :privacy_url, :from_address, presence: true
   validates :approval, inclusion: { in: LicenceIssuers::NAMES }, allow_nil: true
   validates :keep_approved_days, numericality: { only_integer: true, greater_than: 0 }
+  validates :places_per_referral, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
 
   # Creates or updates every product in config/products.yml. Never deletes:
   # a product left out of the file keeps its row and its signups.
@@ -29,6 +30,7 @@ class Product < ApplicationRecord
           thanks_url: attributes["thanks_url"],
           approval: attributes["approval"],
           keep_approved_days: attributes.fetch("keep_approved_days", 90),
+          places_per_referral: attributes.fetch("places_per_referral", 5),
           questions: Array(attributes["questions"]).map { |q| { "question" => q.fetch("question"), "options" => Array(q.fetch("options")) } }
         )
       end
@@ -36,6 +38,16 @@ class Product < ApplicationRecord
   end
 
   def to_param = slug
+
+  # Everyone waiting, in order. Each starts at their place by signup time and
+  # moves up `places_per_referral` places (passes that many people) for every
+  # confirmed referral: on a tie, more referrals go first, then whoever signed
+  # up first. Waitlists are small, so this is computed in Ruby.
+  def line
+    signups.waiting.in_line.to_a.each_with_index
+      .sort_by { |signup, index| [index - places_per_referral * signup.effective_referrals, -signup.effective_referrals, index] }
+      .map(&:first)
+  end
 
   def allows_origin?(origin) = origin.present? && allowed_origins.include?(origin)
 

@@ -22,7 +22,8 @@ class GetwaitlistImportTest < ActiveSupport::TestCase
 
   test "a dry run writes nothing and counts every reason" do
     counts = GetwaitlistImport.new(product: acme, rows:).plan.counts
-    assert_equal({ import: 1, unverified: 1, removed: 1, spam: 1, existing: 1, suppressed: 1, invalid: 2 }, counts)
+    assert_equal({ import: 1, unverified: 1, removed: 1, spam: 1, existing: 1, suppressed: 1, invalid: 2,
+      imported_with_referral_credit: 1, referral_credit: 3 }, counts)
     assert_equal 1, Signup.count
   end
 
@@ -40,5 +41,21 @@ class GetwaitlistImportTest < ActiveSupport::TestCase
 
     # Running it again adds nobody.
     assert_equal 0, GetwaitlistImport.new(product: acme, rows:).apply!.import.size
+  end
+
+  test "referral codes, who referred whom and leftover credit come across, so old links keep counting" do
+    rows = [
+      { "email" => "ref@example.com", "created_at" => "2026-09-27_10-00-00", "verified" => true, "referral_token" => "AAAAAAAAA", "amount_referred" => 3 },
+      { "email" => "kid@example.com", "created_at" => "2026-09-28_10-00-00", "verified" => true, "referral_token" => "BBBBBBBBB", "referred_by_signup_token" => "AAAAAAAAA" },
+      { "email" => "never@example.com", "created_at" => "2026-09-28_11-00-00", "verified" => false, "referral_token" => "CCCCCCCCC", "referred_by_signup_token" => "AAAAAAAAA" }
+    ]
+    GetwaitlistImport.new(product: acme, rows:).apply!
+    referrer = acme.signups.find_by!(email: "ref@example.com")
+    kid = acme.signups.find_by!(email: "kid@example.com")
+    assert_equal "AAAAAAAAA", referrer.referral_code
+    assert_equal referrer, kid.referred_by
+    assert_equal [1, 2, 3], [referrer.referrals_count, referrer.imported_referrals, referrer.effective_referrals]
+    # An old GetWaitlist link (ref_id=AAAAAAAAA) now credits the same person.
+    assert_equal referrer, Signup.referrer_for(acme, "AAAAAAAAA", "new@example.com")
   end
 end

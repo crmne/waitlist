@@ -30,6 +30,9 @@ button { font: inherit; font-weight: 600; cursor: pointer; border: 0; border-rad
   background: var(--accent); color: var(--on-accent); margin-top: 1.25rem; }
 button:hover { opacity: .9; }
 button.danger { background: var(--danger); color: #fff; }
+.share { display: flex; gap: .5rem; }
+.share input { flex: 1; font-size: .9rem; }
+.share button { margin: 0; flex: none; }
 .error { color: var(--danger); margin: 0 0 .5rem; }
 .notice { color: var(--ok); }
 .trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }

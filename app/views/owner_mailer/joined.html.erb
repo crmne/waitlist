@@ -6,5 +6,6 @@
   <% end %>
 </table>
 <% end %>
+<p style="margin:0 0 8px;font-size:14px;color:#5d5a55">Joined through someone's link: <%= @signup.referred_by_id ? "yes" : "no" %> · Their confirmed referrals: <%= @signup.effective_referrals %></p>
 <p style="margin:0 0 20px">Place in line: <strong><%= @place || "not waiting" %></strong> · Waiting now: <strong><%= @waiting %></strong></p>
 <p style="margin:0"><a href="<%= @admin_url %>" style="display:inline-block;background:#1d1c1a;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600">Open in the admin</a></p>

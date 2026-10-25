@@ -6,6 +6,7 @@
     <meta name="robots" content="noindex">
     <meta name="referrer" content="no-referrer">
     <%= stylesheet_link_tag "application" %>
+    <%= javascript_include_tag "copy", defer: true %>
   </head>
   <body class="<%= "embedded" if @embedded %>">
     <main class="card">

@@ -8,7 +8,7 @@ class SignupFlowTest < ActionDispatch::IntegrationTest
     assert_match "Join the Acme waitlist", response.body
 
     perform_enqueued_jobs do
-      post "/p/acme/signups", params: { email: " DJ@Example.com ", answers: { "Where do you play most?" => "At home", "Made up?" => "x" } }
+      post "/p/acme/signups", params: { elapsed_ms: 5000, email: " DJ@Example.com ", answers: { "Where do you play most?" => "At home", "Made up?" => "x" } }
     end
     assert_redirected_to "/p/acme/thanks"
     assert_nil response.headers["Set-Cookie"]
@@ -45,19 +45,19 @@ class SignupFlowTest < ActionDispatch::IntegrationTest
 
   test "signing up again sends no second email inside the resend window and says the same thing" do
     perform_enqueued_jobs do
-      2.times { post "/p/acme/signups", params: { email: "dj@example.com" }, as: :json }
+      2.times { post "/p/acme/signups", params: { elapsed_ms: 5000, email: "dj@example.com" }, as: :json }
     end
     assert_response :accepted
     assert_equal({ "status" => "check_email" }, response.parsed_body)
     assert_equal 1, ActionMailer::Base.deliveries.size
 
     travel 20.minutes do
-      perform_enqueued_jobs { post "/p/acme/signups", params: { email: "dj@example.com" }, as: :json }
+      perform_enqueued_jobs { post "/p/acme/signups", params: { elapsed_ms: 5000, email: "dj@example.com" }, as: :json }
     end
     assert_equal 2, ActionMailer::Base.deliveries.size
 
     confirmed_signup("old@example.com")
-    perform_enqueued_jobs { post "/p/acme/signups", params: { email: "old@example.com" }, as: :json }
+    perform_enqueued_jobs { post "/p/acme/signups", params: { elapsed_ms: 5000, email: "old@example.com" }, as: :json }
     assert_response :accepted
     assert_equal 2, ActionMailer::Base.deliveries.size
   end
@@ -67,16 +67,16 @@ class SignupFlowTest < ActionDispatch::IntegrationTest
     assert_response :no_content
     assert_equal "https://example.com", response.headers["Access-Control-Allow-Origin"]
 
-    post "/p/acme/signups", params: { email: "dj@example.com" }, as: :json, headers: { "Origin" => "https://evil.example" }
+    post "/p/acme/signups", params: { elapsed_ms: 5000, email: "dj@example.com" }, as: :json, headers: { "Origin" => "https://evil.example" }
     assert_nil response.headers["Access-Control-Allow-Origin"]
   end
 
   test "a bad address is refused, and the honeypot pretends to work" do
-    post "/p/acme/signups", params: { email: "not an email" }, as: :json
+    post "/p/acme/signups", params: { elapsed_ms: 5000, email: "not an email" }, as: :json
     assert_response :unprocessable_content
     assert_equal "error", response.parsed_body["status"]
 
-    post "/p/acme/signups", params: { email: "bot@example.com", website: "spam" }
+    post "/p/acme/signups", params: { elapsed_ms: 5000, email: "bot@example.com", website: "spam" }
     assert_redirected_to "/p/acme/thanks"
     assert_equal 0, Signup.count
     assert_no_enqueued_emails
@@ -111,13 +111,13 @@ class SignupFlowTest < ActionDispatch::IntegrationTest
     assert_not Suppression.where("email_digest LIKE ?", "%example%").exists?
 
     # Signing up and confirming again lifts it.
-    perform_enqueued_jobs { post "/p/acme/signups", params: { email: "dj@example.com" } }
+    perform_enqueued_jobs { post "/p/acme/signups", params: { elapsed_ms: 5000, email: "dj@example.com" } }
     acme.signups.sole.confirm!
     assert_not Suppression.suppressed?(acme, "dj@example.com")
   end
 
   test "signup rows hold no address, user agent or referrer" do
     columns = Signup.column_names.join(" ")
-    %w[ip remote user_agent referr].each { |word| assert_no_match(/#{word}/, columns) }
+    %w[ip remote user_agent referer landing].each { |word| assert_no_match(/#{word}/, columns) }
   end
 end

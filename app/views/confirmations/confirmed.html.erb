@@ -5,4 +5,12 @@
 <% else %>
   <p class="lede">Your place on the <%= @product.name %> waitlist is confirmed.</p>
 <% end %>
+<% if @product.places_per_referral.positive? %>
+  <label for="referral-link">Your link</label>
+  <div class="share">
+    <input id="referral-link" type="text" readonly value="<%= product_form_url(@product.slug, ref: @signup.referral_code) %>">
+    <button type="button" data-copy="#referral-link">Copy</button>
+  </div>
+  <p class="fine">Share it: for everyone who joins through it and confirms their email, you move up <%= @product.places_per_referral %> places. We never tell you who they are.</p>
+<% end %>
 <p class="fine">Changed your mind? <a href="<%= leave_path(@signup.generate_token_for(:leave)) %>">Leave the list and delete your details</a>.</p>

@@ -12,7 +12,7 @@
 </form>
 <table>
   <thead>
-    <tr><th class="n">#</th><th>Email</th><th>Signed up</th><% @product.question_titles.each do |q| %><th><%= q %></th><% end %><th></th></tr>
+    <tr><th class="n">#</th><th>Email</th><th>Signed up</th><th class="n">Referrals</th><% @product.question_titles.each do |q| %><th><%= q %></th><% end %><th></th></tr>
   </thead>
   <tbody>
     <% @signups.each_with_index do |signup, i| %>
@@ -20,6 +20,7 @@
         <td class="n"><%= i + 1 %></td>
         <td><%= signup.email %><% if signup.source != "form" %> <span class="tag"><%= signup.source %></span><% end %></td>
         <td class="date"><%= signup.created_at.to_date.iso8601 %></td>
+        <td class="n"><%= signup.effective_referrals %></td>
         <% @product.question_titles.each do |q| %><td><%= signup.answers[q] %></td><% end %>
         <td><div class="actions">
           <% if signup.status == "waiting" %>

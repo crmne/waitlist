@@ -19,6 +19,8 @@
 #                   issues a Acme licence key (app/models/licence_issuers).
 #   keep_approved_days  approved people are deleted this many days after
 #                   approval (default 90)
+#   places_per_referral  how many places a confirmed referral moves someone
+#                   up (default 5; GetWaitlist's Acme list used 3)
 #   questions       optional multiple-choice questions; every answer optional
 acme:
   name: Acme
@@ -31,6 +33,7 @@ acme:
     - https://example.com
   approval: acme_licence
   keep_approved_days: 90
+  places_per_referral: 5
   questions:
     - question: What do you play on most?
       options:

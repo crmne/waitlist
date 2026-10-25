@@ -7,6 +7,8 @@ gem "puma", ">= 5.0"
 # Confirmation emails and retention jobs, in the same process (SOLID_QUEUE_IN_PUMA)
 gem "solid_queue"
 gem "csv"
+# Honeypot spam check, as Chat with Work used on its waitlist
+gem "invisible_captcha", "~> 2.3"
 gem "bootsnap", require: false
 gem "tzinfo-data", platforms: %i[windows jruby]
 

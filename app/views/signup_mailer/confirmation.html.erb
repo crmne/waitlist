@@ -2,4 +2,7 @@
 <p style="margin:0 0 20px">Someone, hopefully you, asked to join the <%= @product.name %> waitlist with this address. To confirm your place, press the button.</p>
 <p style="margin:0 0 20px"><a href="<%= @confirm_url %>" style="display:inline-block;background:#1d1c1a;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600">Confirm my place</a></p>
 <p style="margin:0 0 16px;color:#5d5a55;font-size:14px">The link works for <%= Rails.configuration.x.confirmation_validity.in_days.to_i %> days. If you don't confirm, your address is deleted after that and you won't hear from us again. If this wasn't you, ignore this email.</p>
+<% if @product.places_per_referral.positive? %>
+<p style="margin:0 0 16px;font-size:14px">Once you've confirmed, share your own link. For everyone who joins through it and confirms their email, you move up <%= @product.places_per_referral %> places:<br><a href="<%= @referral_url %>" style="color:#1d1c1a;word-break:break-all"><%= @referral_url %></a></p>
+<% end %>
 <p style="margin:0;color:#5d5a55;font-size:14px"><a href="<%= @leave_url %>" style="color:#5d5a55">Leave the list and delete my details</a> · <a href="<%= @product.privacy_url %>" style="color:#5d5a55">Privacy</a> · <a href="<%= @product.site_url %>" style="color:#5d5a55"><%= @product.name %></a></p>

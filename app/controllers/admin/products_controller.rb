@@ -17,16 +17,17 @@ class Admin::ProductsController < Admin::BaseController
   def show
     @product = Product.find_by!(slug: params[:slug])
     @status = STATUSES.include?(params[:status]) ? params[:status] : "waiting"
-    @signups = @product.signups.public_send(@status).in_line
-    @signups = @signups.where("email LIKE ?", "%#{Signup.sanitize_sql_like(params[:q].strip.downcase)}%") if params[:q].present?
+    @signups = @status == "waiting" ? @product.line : @product.signups.public_send(@status).in_line.to_a
+    @signups = @signups.select { |signup| signup.email.include?(params[:q].strip.downcase) } if params[:q].present?
   end
 
   def export
     product = Product.find_by!(slug: params[:slug])
     csv = CSV.generate do |rows|
-      rows << ["email", "status", "place in line", "signed up", "confirmed", "approved", "licence issued", "source", *product.question_titles]
+      places = product.line.each_with_index.to_h { |signup, index| [signup.id, index + 1] }
+      rows << ["email", "status", "place in line", "referrals", "signed up", "confirmed", "approved", "licence issued", "source", *product.question_titles]
       product.signups.in_line.each do |signup|
-        rows << [signup.email, signup.status, signup.place_in_line, signup.created_at&.iso8601, signup.confirmed_at&.iso8601,
+        rows << [signup.email, signup.status, places[signup.id], signup.effective_referrals, signup.created_at&.iso8601, signup.confirmed_at&.iso8601,
           signup.approved_at&.iso8601, signup.licence_issued_at&.iso8601, signup.source,
           *product.question_titles.map { |q| signup.answers[q] }].map { |cell| spreadsheet_safe(cell) }
       end

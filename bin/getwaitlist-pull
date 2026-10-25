@@ -2,7 +2,8 @@
 # Prints one GetWaitlist waitlist's signups as JSON on stdout, for piping
 # into `bin/rails "getwaitlist:import[PRODUCT]"` in the production container
 # (docs/migration.md). Reads only. Keeps only what the import needs: email,
-# signup time, verified, removed, spam and answers. Never writes a file.
+# signup time, verified, removed, spam, answers and referral token, referrer
+# token and referral count. Never writes a file.
 #
 #   GETWAITLIST_API_KEY=... bin/getwaitlist-pull 33098 | ...
 require "json"
@@ -14,7 +15,7 @@ key = ENV["GETWAITLIST_API_KEY"].to_s.strip
 abort "Set GETWAITLIST_API_KEY (op-cache read \"op://Personal/Getwaitlist/token\")" if key.empty?
 abort "Refusing to print signups to a terminal; pipe the output into the import." if $stdout.tty?
 
-KEEP = %w[email created_at verified removed_date is_spam answers].freeze
+KEEP = %w[email created_at verified removed_date is_spam answers referral_token referred_by_signup_token amount_referred].freeze
 rows = []
 200.times do
   uri = URI("https://api.getwaitlist.com/api/v1/signup/waitlist/#{id}")

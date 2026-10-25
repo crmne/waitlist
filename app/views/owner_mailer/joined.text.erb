@@ -4,6 +4,8 @@
 <%= q %> <%= @signup.answers[q].presence || "(no answer)" %>
 <% end -%>
 
+Joined through someone's link: <%= @signup.referred_by_id ? "yes" : "no" %>
+Their confirmed referrals: <%= @signup.effective_referrals %>
 Place in line: <%= @place || "not waiting" %>
 Waiting now: <%= @waiting %>
 

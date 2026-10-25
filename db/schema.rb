@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_25_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_25_190000) do
   create_table "products", force: :cascade do |t|
     t.string "slug", null: false
     t.string "name", null: false
@@ -26,6 +26,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_25_180000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "notify_address"
+    t.integer "places_per_referral", default: 5, null: false
     t.index ["slug"], name: "index_products_on_slug", unique: true
   end
 
@@ -42,9 +43,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_25_180000) do
     t.string "licence_reference"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "referral_code"
+    t.integer "referred_by_id"
+    t.integer "referrals_count", default: 0, null: false
+    t.integer "imported_referrals", default: 0, null: false
     t.index ["product_id", "confirmed_at", "approved_at", "created_at"], name: "idx_on_product_id_confirmed_at_approved_at_created__e186c70b46"
     t.index ["product_id", "email"], name: "index_signups_on_product_id_and_email", unique: true
+    t.index ["product_id", "referral_code"], name: "index_signups_on_product_id_and_referral_code", unique: true
     t.index ["product_id"], name: "index_signups_on_product_id"
+    t.index ["referred_by_id"], name: "index_signups_on_referred_by_id"
   end
 
   create_table "suppressions", force: :cascade do |t|
@@ -56,5 +63,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_25_180000) do
   end
 
   add_foreign_key "signups", "products"
+  add_foreign_key "signups", "signups", column: "referred_by_id", on_delete: :nullify
   add_foreign_key "suppressions", "products"
 end

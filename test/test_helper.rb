@@ -7,7 +7,13 @@ module ActiveSupport
     include ActiveJob::TestHelper
     parallelize(workers: 2)
 
+    # No DNS in tests: every domain takes mail except these.
+    NO_MAIL = %w[nomail.test example.net].freeze
+
     setup do
+      EmailDomain.resolver = ->(domain) { !NO_MAIL.include?(domain) }
+      EmailDomain::CACHE.clear
+      SignupsController::RATE_LIMIT_STORE.clear
       Product.sync!
       Rails.configuration.x.admin_password = "correct horse"
     end

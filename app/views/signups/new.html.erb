@@ -4,6 +4,8 @@
 
 <%= form_with url: product_signups_path(@product.slug), method: :post, authenticity_token: false, local: true, class: "signup" do %>
   <% if @embedded %><input type="hidden" name="embed" value="1"><% end %>
+  <input type="hidden" name="started" value="<%= SpamCheck.started_token %>">
+  <% if @referral %><input type="hidden" name="ref" value="<%= @referral %>"><% end %>
   <% if @error %><p class="error" role="alert"><%= @error %></p><% end %>
 
   <label for="email">Email</label>
