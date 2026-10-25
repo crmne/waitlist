@@ -1,0 +1,6 @@
+<% content_for :title, "Confirm your place" %>
+<h1>Confirm your place</h1>
+<p class="lede">Join the <%= @product.name %> waitlist as <strong><%= @signup.email %></strong>?</p>
+<%= form_with url: confirmation_path(params[:token]), method: :post, authenticity_token: false, local: true do %>
+  <button type="submit">Confirm my place</button>
+<% end %>

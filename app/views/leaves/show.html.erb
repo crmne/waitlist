@@ -1,0 +1,6 @@
+<% content_for :title, "Leave the waitlist" %>
+<h1>Leave the <%= @product.name %> waitlist</h1>
+<p class="lede">This deletes <strong><%= @signup.email %></strong> and your answers from the waitlist. You won't hear from us about it again.</p>
+<%= form_with url: leave_path(params[:token]), method: :post, authenticity_token: false, local: true do %>
+  <button type="submit" class="danger">Leave and delete my details</button>
+<% end %>

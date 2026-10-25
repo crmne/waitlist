@@ -1,0 +1,62 @@
+# One entry per product. `bin/rails products:sync` (run on every boot by
+# bin/docker-entrypoint) creates or updates the rows; removing an entry here
+# never deletes a product or its signups (see docs/operations.md).
+#
+#   name            shown on the form, the pages and in emails
+#   site_url        the product's website; pages link back to it
+#   privacy_url     the notice that describes this waitlist
+#   from            the sender of the confirmation email (must be a verified
+#                   sender of the SMTP account, docs/deployment.md)
+#   reply_to        where replies go
+#   allowed_origins sites whose scripts may post to the JSON endpoint and
+#                   that may frame the hosted form
+#   thanks_url      optional: where a plain HTML form post returns to,
+#                   instead of this service's own "check your email" page
+#   approval        optional: what approving someone does. `acme_licence`
+#                   issues a Acme licence key (app/models/licence_issuers).
+#   keep_approved_days  approved people are deleted this many days after
+#                   approval (default 90)
+#   questions       optional multiple-choice questions; every answer optional
+acme:
+  name: Acme
+  site_url: https://example.com
+  privacy_url: https://example.com/privacy
+  from: Acme <hello@example.com>
+  reply_to: hello@plenty.is
+  allowed_origins:
+    - https://example.com
+  approval: acme_licence
+  keep_approved_days: 90
+  questions:
+    - question: What do you play on most?
+      options:
+        - "Newer Pioneer: CDJ-3000X / CDJ-1500X / XDJ-AZ / OPUS-QUAD / OMNIS-DUO"
+        - "Classic Pioneer: CDJ-3000 / CDJ-2000NXS2 / XDJ-RX3 / XDJ-XZ or older"
+        - Denon DJ (Engine)
+        - Traktor
+        - Serato
+        - A controller with rekordbox
+        - Something else
+    - question: Where do you play most?
+      options:
+        - Clubs and festivals
+        - Bars and small venues
+        - Private parties and weddings
+        - Radio and streams
+        - At home
+        - Something else
+    - question: What slows you down most?
+      options:
+        - Finding the right track mid-set
+        - Fixing tags and covers
+        - Beatgrids that drift
+        - Duplicates
+        - Building playlists
+        - Getting music onto the USB
+        - Something else
+    - question: How many tracks do you have?
+      options:
+        - Under 1000
+        - 1000 to 5000
+        - 5000 to 20000
+        - Over 20000

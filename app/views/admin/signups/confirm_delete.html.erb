@@ -1,0 +1,4 @@
+<h1>Delete <%= @signup.email %>?</h1>
+<p>This removes them and their answers from the <%= @signup.product.name %> waitlist for good. An import will never add them back; they can sign up again themselves.</p>
+<%= button_to "Delete #{@signup.email}", admin_signup_path(@signup), method: :delete, class: "danger" %>
+<p><a href="<%= admin_product_path(@signup.product) %>">Keep them</a></p>

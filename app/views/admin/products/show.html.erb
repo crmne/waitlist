@@ -1,0 +1,36 @@
+<% content_for :title, "#{@product.name} waitlist" %>
+<h1><%= @product.name %></h1>
+<nav class="tabs">
+  <% Admin::ProductsController::STATUSES.each do |status| %>
+    <a href="<%= admin_product_path(@product, status:) %>" class="<%= "current" if status == @status %>"><%= status.capitalize %></a>
+  <% end %>
+  <a href="<%= export_admin_product_path(@product) %>">Export CSV</a>
+</nav>
+<form method="get" class="search">
+  <input type="hidden" name="status" value="<%= @status %>">
+  <input type="search" name="q" value="<%= params[:q] %>" placeholder="Find an email" aria-label="Find an email">
+</form>
+<table>
+  <thead>
+    <tr><th class="n">#</th><th>Email</th><th>Signed up</th><% @product.question_titles.each do |q| %><th><%= q %></th><% end %><th></th></tr>
+  </thead>
+  <tbody>
+    <% @signups.each_with_index do |signup, i| %>
+      <tr>
+        <td class="n"><%= i + 1 %></td>
+        <td><%= signup.email %><% if signup.source != "form" %> <span class="tag"><%= signup.source %></span><% end %></td>
+        <td class="date"><%= signup.created_at.to_date.iso8601 %></td>
+        <% @product.question_titles.each do |q| %><td><%= signup.answers[q] %></td><% end %>
+        <td><div class="actions">
+          <% if signup.status == "waiting" %>
+            <%= button_to "Approve", approve_admin_signup_path(signup), method: :post %>
+          <% elsif signup.approved_at %>
+            <span class="tag"><%= signup.licence_issued_at ? "Licence issued" : (@product.approval ? "Licence not issued yet" : "Approved") %></span>
+          <% end %>
+          <a href="<%= delete_admin_signup_path(signup) %>" class="quiet">Delete</a>
+        </div></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+<% if @signups.empty? %><p class="fine">Nobody here.</p><% end %>

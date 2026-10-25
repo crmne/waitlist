@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+# Prints one GetWaitlist waitlist's signups as JSON on stdout, for piping
+# into `bin/rails "getwaitlist:import[PRODUCT]"` in the production container
+# (docs/migration.md). Reads only. Keeps only what the import needs: email,
+# signup time, verified, removed, spam and answers. Never writes a file.
+#
+#   GETWAITLIST_API_KEY=... bin/getwaitlist-pull 33098 | ...
+require "json"
+require "net/http"
+require "uri"
+
+id = Integer(ARGV.fetch(0) { abort "usage: bin/getwaitlist-pull WAITLIST_ID" }, 10)
+key = ENV["GETWAITLIST_API_KEY"].to_s.strip
+abort "Set GETWAITLIST_API_KEY (op-cache read \"op://Personal/Getwaitlist/token\")" if key.empty?
+abort "Refusing to print signups to a terminal; pipe the output into the import." if $stdout.tty?
+
+KEEP = %w[email created_at verified removed_date is_spam answers].freeze
+rows = []
+200.times do
+  uri = URI("https://api.getwaitlist.com/api/v1/signup/waitlist/#{id}")
+  uri.query = URI.encode_www_form(offset: rows.size, limit: 100, questions_request: true)
+  request = Net::HTTP::Get.new(uri, "api-key" => key, "Accept" => "application/json")
+  response = Net::HTTP.start(uri.host, uri.port, use_ssl: true, open_timeout: 10, read_timeout: 30) { _1.request(request) }
+  abort "GetWaitlist answered HTTP #{response.code}" unless response.code == "200"
+  page = JSON.parse(response.body)
+  page = page["signups"] || page["data"] || [] if page.is_a?(Hash)
+  break if page.empty?
+  rows.concat(page.map { _1.slice(*KEEP) })
+  break if page.size < 100
+end
+$stdout.write(JSON.generate(rows))
+warn "#{rows.size} signups pulled from waitlist #{id}"

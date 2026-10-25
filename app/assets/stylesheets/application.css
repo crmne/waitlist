@@ -1,0 +1,52 @@
+:root {
+  --bg: #f6f5f2; --card: #ffffff; --ink: #1d1c1a; --muted: #5d5a55; --line: #e4e1db;
+  --accent: #1d1c1a; --on-accent: #ffffff; --danger: #a8321f; --ok: #2f6b3a;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #151413; --card: #1f1e1c; --ink: #f1efea; --muted: #a8a49c; --line: #34322e;
+    --accent: #f1efea; --on-accent: #151413; --danger: #e8735e; --ok: #7cc48a; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+a { color: inherit; }
+h1 { font-size: 1.5rem; line-height: 1.25; margin: 0 0 .5rem; letter-spacing: -.01em; }
+.lede { margin: 0 0 1.25rem; color: var(--muted); }
+.fine { font-size: .875rem; color: var(--muted); margin: 1rem 0 0; }
+.card { max-width: 30rem; margin: 3rem auto 1rem; padding: 2rem; background: var(--card); border-radius: 14px;
+  border: 1px solid var(--line); }
+body.embedded { background: transparent; }
+body.embedded .card { margin: 0; border: 0; padding: 1rem; background: transparent; }
+footer { max-width: 30rem; margin: 0 auto 3rem; padding: 0 2rem; display: flex; gap: 1rem; font-size: .875rem; color: var(--muted); }
+label, legend { display: block; font-size: .875rem; font-weight: 600; margin: 1rem 0 .35rem; }
+fieldset { border: 0; padding: 0; margin: .5rem 0 0; }
+legend { color: var(--muted); font-weight: 500; padding: 0; }
+input[type=email], input[type=text], input[type=search], select {
+  width: 100%; font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--line);
+  border-radius: 8px; padding: .65rem .75rem; }
+input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button { font: inherit; font-weight: 600; cursor: pointer; border: 0; border-radius: 8px; padding: .7rem 1.1rem;
+  background: var(--accent); color: var(--on-accent); margin-top: 1.25rem; }
+button:hover { opacity: .9; }
+button.danger { background: var(--danger); color: #fff; }
+.error { color: var(--danger); margin: 0 0 .5rem; }
+.notice { color: var(--ok); }
+.trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.admin header, .admin main, .admin > p { max-width: 72rem; margin: 0 auto; padding: 1rem 1.5rem 0; }
+.admin header a { font-weight: 600; text-decoration: none; }
+.admin table { width: 100%; border-collapse: collapse; font-size: .9rem; margin-top: 1rem; }
+.admin th, .admin td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.admin th { font-weight: 600; color: var(--muted); font-size: .8rem; }
+.admin .n { text-align: right; font-variant-numeric: tabular-nums; }
+.admin .actions { display: flex; gap: .75rem; align-items: center; justify-content: flex-end; white-space: nowrap; }
+.admin .actions form { margin: 0; }
+.admin .actions button { margin: 0; padding: .35rem .7rem; font-size: .85rem; }
+.admin .date { white-space: nowrap; }
+.admin .quiet { color: var(--muted); font-size: .85rem; }
+.tabs { display: flex; gap: 1rem; margin: .5rem 0; font-size: .9rem; }
+.tabs a { color: var(--muted); text-decoration: none; }
+.tabs a.current { color: var(--ink); font-weight: 600; }
+.search input { max-width: 20rem; }
+.tag { font-size: .75rem; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: .1rem .5rem; }
+@media (max-width: 40rem) { .card { margin: 1rem; padding: 1.5rem 1rem; } footer { padding: 0 1rem; } }

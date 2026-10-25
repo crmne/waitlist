@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+  <head>
+    <title><%= content_for(:title) || "Waitlists" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="robots" content="noindex">
+    <%= csrf_meta_tags %>
+    <%= stylesheet_link_tag "application" %>
+  </head>
+  <body class="admin">
+    <header><a href="<%= admin_root_path %>">Waitlists</a></header>
+    <% if notice %><p class="notice" role="status"><%= notice %></p><% end %>
+    <% if alert %><p class="error" role="alert"><%= alert %></p><% end %>
+    <main><%= yield %></main>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+source "https://rubygems.org"
+
+gem "rails", "~> 8.1.4"
+gem "propshaft"
+gem "sqlite3", ">= 2.1"
+gem "puma", ">= 5.0"
+# Confirmation emails and retention jobs, in the same process (SOLID_QUEUE_IN_PUMA)
+gem "solid_queue"
+gem "csv"
+gem "bootsnap", require: false
+gem "tzinfo-data", platforms: %i[windows jruby]
+
+group :development, :test do
+  gem "debug", platforms: %i[mri windows], require: "debug/prelude"
+end

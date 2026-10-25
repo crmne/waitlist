@@ -1,0 +1,8 @@
+<% content_for :title, "You're on the list" %>
+<h1>You're on the list</h1>
+<% if (place = @signup.place_in_line) %>
+  <p class="lede">You're number <%= place %> on the <%= @product.name %> waitlist. We'll write when there is a place for you.</p>
+<% else %>
+  <p class="lede">Your place on the <%= @product.name %> waitlist is confirmed.</p>
+<% end %>
+<p class="fine">Changed your mind? <a href="<%= leave_path(@signup.generate_token_for(:leave)) %>">Leave the list and delete your details</a>.</p>

@@ -1,0 +1,15 @@
+Hello,
+
+Someone, hopefully you, asked to join the <%= @product.name %> waitlist with this address. To confirm your place, open this link:
+
+<%= @confirm_url %>
+
+The link works for <%= Rails.configuration.x.confirmation_validity.in_days.to_i %> days. If you don't confirm, your address is deleted after that and you won't hear from us again.
+
+If this wasn't you, ignore this email.
+
+You can leave the list and delete your details at any time:
+<%= @leave_url %>
+
+<%= @product.name %>, <%= @product.site_url %>
+Privacy: <%= @product.privacy_url %>
