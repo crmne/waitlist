@@ -10,7 +10,7 @@ class Admin::ProductsController < Admin::BaseController
       Arel.sql("SUM(confirmed_at IS NULL)"),
       Arel.sql("SUM(confirmed_at IS NOT NULL AND approved_at IS NULL)"),
       Arel.sql("SUM(approved_at IS NOT NULL)"),
-      Arel.sql("SUM(approved_at IS NOT NULL AND licence_issued_at IS NULL)")
+      Arel.sql("SUM(approved_at IS NOT NULL AND approval_emailed_at IS NULL AND (approval_registered_at IS NULL OR approval_failed_at IS NOT NULL))")
     ).to_h { |id, *counts| [id, counts.map(&:to_i)] }
   end
 
@@ -25,10 +25,10 @@ class Admin::ProductsController < Admin::BaseController
     product = Product.find_by!(slug: params[:slug])
     csv = CSV.generate do |rows|
       places = product.line.each_with_index.to_h { |signup, index| [signup.id, index + 1] }
-      rows << ["email", "status", "place in line", "referrals", "signed up", "confirmed", "approved", "licence issued", "source", *product.question_titles]
+      rows << ["email", "status", "place in line", "referrals", "signed up", "confirmed", "approved", "approval", "source", *product.question_titles]
       product.signups.in_line.each do |signup|
         rows << [signup.email, signup.status, places[signup.id], signup.effective_referrals, signup.created_at&.iso8601, signup.confirmed_at&.iso8601,
-          signup.approved_at&.iso8601, signup.licence_issued_at&.iso8601, signup.source,
+          signup.approved_at&.iso8601, signup.approval_state, signup.source,
           *product.question_titles.map { |q| signup.answers[q] }].map { |cell| spreadsheet_safe(cell) }
       end
     end

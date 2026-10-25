@@ -8,11 +8,11 @@ class Admin::SignupsController < Admin::BaseController
     redirect_to admin_product_path(@signup.product), alert: error.message
   end
 
-  # Runs the approval step again for someone approved whose key wasn't
-  # registered (licence-server unreachable, or no token yet).
-  def register_licence
-    ApprovalJob.perform_later(@signup) if @signup.approved_at && @signup.licence_issued_at.nil?
-    redirect_to admin_product_path(@signup.product, status: "approved"), notice: "Registering a key for #{@signup.email} again."
+  # Runs the approval step again where it stopped (webhook unreachable, no
+  # token yet, or the approval email failed).
+  def retry_approval
+    ApprovalJob.perform_later(@signup) if @signup.approval_retryable?
+    redirect_to admin_product_path(@signup.product, status: "approved"), notice: "Trying #{@signup.email}'s approval again."
   end
 
   def confirm_delete; end

@@ -1,0 +1,57 @@
+# The products the tests run with (test/test_helper.rb).
+acme:
+  name: Acme
+  site_url: https://acme.example
+  privacy_url: https://acme.example/privacy
+  from: Acme <hello@acme.example>
+  reply_to: team@acme.example
+  notify: owner@acme.example
+  allowed_origins:
+    - https://acme.example
+  keep_approved_days: 90
+  places_per_referral: 5
+  reminder_days: 14
+  brand:
+    dir: brands/acme
+    logo: logo.png
+    logo_width: 97
+    accent: "#6a4fd8"
+    impressum: "Acme GmbH · Example Street 1, 10115 Berlin"
+  on_approve:
+    url: http://hooks.internal/approved
+    token_file: brands/acme/token
+    id_field: licence_id
+    sent_url: http://hooks.internal/sent
+    labels:
+      sent: Key sent
+      failed: Key registered, email failed
+      registered: Key registered, waiting to be sent
+      pending: Key not registered yet
+  approval_email:
+    template: brands/acme/approval.md
+    variables:
+      download_url: https://acme.example/download
+  questions:
+    - question: What do you play on most?
+      options:
+        - Traktor
+        - Serato
+        - Something else
+    - question: Where do you play most?
+      options:
+        - Clubs and festivals
+        - At home
+    - question: What slows you down most?
+      options:
+        - Duplicates
+        - Building playlists
+    - question: How many tracks do you have?
+      options:
+        - Under 1000
+        - 1000 to 5000
+        - Over 20000
+plain:
+  name: Plain
+  site_url: https://plain.example
+  privacy_url: https://plain.example/privacy
+  from: plain@plain.example

@@ -22,7 +22,7 @@ module Waitlist
     config.i18n.available_locales = [:"en-GB", :en]
 
     # The public address of this service; links in emails point here.
-    config.x.public_host = ENV.fetch("PUBLIC_HOST", "waitlist.plenty.is")
+    config.x.public_host = ENV.fetch("PUBLIC_HOST", "localhost")
 
     # Signups that never confirm are deleted after this long (docs/privacy.md).
     config.x.unconfirmed_retention = 7.days

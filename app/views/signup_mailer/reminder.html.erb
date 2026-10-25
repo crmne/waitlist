@@ -1,0 +1,4 @@
+<%= render "shared/email_heading", text: "Please confirm your place" %>
+<p style="margin:0 0 16px;">You asked to join the <%= @product.name %> waitlist on <a href="<%= @product.site_url %>" style="color:<%= brand["text"] %>;"><%= URI(@product.site_url).host %></a>, but your address was never confirmed. The waitlist has moved to our own server, and you need to confirm to keep your place.</p>
+<%= render "shared/email_button", url: @confirm_url, label: "Confirm my place" %>
+<p style="margin:0 0 20px;font-size:15px;color:<%= brand["muted"] %>;">If you don't confirm by <%= @confirm_by.strftime("%-d %B") %>, your address is deleted and you won't hear from us again. This is the only reminder.</p>

@@ -22,11 +22,13 @@ Rails.application.routes.draw do
     resources :signups, only: :destroy do
       member do
         post :approve
-        post :register_licence
+        post :retry_approval
         get :delete, action: :confirm_delete
       end
     end
   end
 
-  root to: redirect("https://plenty.is")
+  get "brands/:product/:file", to: "brands#show", as: :brand_file
+
+  root to: redirect(ENV.fetch("ROOT_REDIRECT", "/up"))
 end

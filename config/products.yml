@@ -1,69 +1,41 @@
-# One entry per product. `bin/rails products:sync` (run on every boot by
-# bin/docker-entrypoint) creates or updates the rows; removing an entry here
-# never deletes a product or its signups (see docs/operations.md).
+# An example products file. A deployment points PRODUCTS_FILE at its own
+# (this repository's deployment: deploy/products.yml). Paths in it are
+# relative to its folder. `bin/rails products:sync` (run on every boot by
+# bin/docker-entrypoint) creates or updates the rows; removing an entry
+# never deletes a product or its signups.
 #
-#   name            shown on the form, the pages and in emails
-#   site_url        the product's website; pages link back to it
-#   privacy_url     the notice that describes this waitlist
-#   from            the sender of the confirmation email (must be a verified
-#                   sender of the SMTP account, docs/deployment.md)
-#   reply_to        where replies go
-#   notify          who is emailed when someone confirms their signup
-#                   (default carmine@paolino.me; empty for nobody). Imports
-#                   never notify.
-#   allowed_origins sites whose scripts may post to the JSON endpoint and
-#                   that may frame the hosted form
-#   thanks_url      optional: where a plain HTML form post returns to,
-#                   instead of this service's own "check your email" page
-#   approval        optional: what approving someone does. `acme_licence`
-#                   issues a Acme licence key (app/models/licence_issuers).
-#   keep_approved_days  approved people are deleted this many days after
-#                   approval (default 90)
-#   places_per_referral  how many places a confirmed referral moves someone
-#                   up (default 5; GetWaitlist's Acme list used 3)
-#   questions       optional multiple-choice questions; every answer optional
-acme:
-  name: Acme
+#   name               shown on the form, the pages and in emails
+#   site_url           the product's website
+#   privacy_url        the notice that describes this waitlist
+#   from               sender, "Name <address>" (a verified sender of the SMTP account)
+#   reply_to           where replies go
+#   notify             emailed when someone confirms (optional; imports never notify)
+#   allowed_origins    sites whose scripts may post to the JSON endpoint and frame the form
+#   thanks_url         optional: where a plain HTML form post returns to
+#   keep_approved_days approved people are deleted this many days after approval (90)
+#   places_per_referral  places a confirmed referral moves someone up (5)
+#   reminder_days      days an imported unconfirmed person has to confirm (14)
+#   questions          optional multiple-choice questions; every answer optional
+#   brand              dir (a folder whose png, css, woff2 and txt files are
+#                      served at /brands/PRODUCT/FILE), logo (a PNG in it), logo_width, colours (background, card, text,
+#                      muted, accent, accent_text, line), font, heading_font,
+#                      font_css_url, impressum (the footer's legal line)
+#   on_approve         optional webhook run when someone is approved
+#                      (app/models/approval_webhook.rb): url, token_file,
+#                      id_field, sent_url, labels for the admin
+#   approval_email     optional: template (a Subject: line, then the body with
+#                      {{variables}} from the webhook's answer) and variables
+example:
+  name: Example
   site_url: https://example.com
   privacy_url: https://example.com/privacy
-  from: Acme <hello@example.com>
-  reply_to: hello@plenty.is
-  notify: carmine@paolino.me
+  from: Example <hello@example.com>
+  reply_to: hello@example.com
   allowed_origins:
     - https://example.com
-  approval: acme_licence
-  keep_approved_days: 90
-  places_per_referral: 5
   questions:
-    - question: What do you play on most?
+    - question: How did you hear about us?
       options:
-        - "Newer Pioneer: CDJ-3000X / CDJ-1500X / XDJ-AZ / OPUS-QUAD / OMNIS-DUO"
-        - "Classic Pioneer: CDJ-3000 / CDJ-2000NXS2 / XDJ-RX3 / XDJ-XZ or older"
-        - Denon DJ (Engine)
-        - Traktor
-        - Serato
-        - A controller with rekordbox
+        - A friend
+        - Search
         - Something else
-    - question: Where do you play most?
-      options:
-        - Clubs and festivals
-        - Bars and small venues
-        - Private parties and weddings
-        - Radio and streams
-        - At home
-        - Something else
-    - question: What slows you down most?
-      options:
-        - Finding the right track mid-set
-        - Fixing tags and covers
-        - Beatgrids that drift
-        - Duplicates
-        - Building playlists
-        - Getting music onto the USB
-        - Something else
-    - question: How many tracks do you have?
-      options:
-        - Under 1000
-        - 1000 to 5000
-        - 5000 to 20000
-        - Over 20000

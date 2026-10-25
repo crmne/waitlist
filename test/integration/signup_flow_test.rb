@@ -21,7 +21,7 @@ class SignupFlowTest < ActionDispatch::IntegrationTest
 
     mail = ActionMailer::Base.deliveries.sole
     assert_equal ["dj@example.com"], mail.to
-    assert_equal ["hello@example.com"], mail.from
+    assert_equal ["hello@acme.example"], mail.from
     assert_equal "Confirm your place on the Acme waitlist", mail.subject
     confirm = mail.text_part.body.to_s[%r{https?://\S+/confirm/\S+}]
     leave = mail.text_part.body.to_s[%r{https?://\S+/leave/\S+}]
@@ -63,9 +63,9 @@ class SignupFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "the JSON endpoint answers CORS only for the product's own sites" do
-    process :options, "/p/acme/signups", headers: { "Origin" => "https://example.com" }
+    process :options, "/p/acme/signups", headers: { "Origin" => "https://acme.example" }
     assert_response :no_content
-    assert_equal "https://example.com", response.headers["Access-Control-Allow-Origin"]
+    assert_equal "https://acme.example", response.headers["Access-Control-Allow-Origin"]
 
     post "/p/acme/signups", params: { elapsed_ms: 5000, email: "dj@example.com" }, as: :json, headers: { "Origin" => "https://evil.example" }
     assert_nil response.headers["Access-Control-Allow-Origin"]
@@ -85,10 +85,10 @@ class SignupFlowTest < ActionDispatch::IntegrationTest
   test "the hosted form may be framed only by the product's sites" do
     get "/p/acme?embed=1"
     assert_nil response.headers["X-Frame-Options"]
-    assert_includes response.headers["Content-Security-Policy"], "form-action 'self'; frame-ancestors 'self' https://example.com"
-    acme.update!(thanks_url: "https://example.com/thanks")
+    assert_includes response.headers["Content-Security-Policy"], "form-action 'self'; frame-ancestors 'self' https://acme.example"
+    acme.update!(thanks_url: "https://acme.example/thanks")
     get "/p/acme"
-    assert_includes response.headers["Content-Security-Policy"], "form-action 'self' https://example.com;"
+    assert_includes response.headers["Content-Security-Policy"], "form-action 'self' https://acme.example;"
   end
 
   test "an unknown product is a 404" do

@@ -17,8 +17,8 @@ class JoinedNotificationTest < ActionDispatch::IntegrationTest
     perform_enqueued_jobs { post "/confirm/#{token}" }
     assert_response :success
     mail = ActionMailer::Base.deliveries.sole
-    assert_equal ["carmine@paolino.me"], mail.to
-    assert_equal ["hello@example.com"], mail.from
+    assert_equal ["owner@acme.example"], mail.to
+    assert_equal ["hello@acme.example"], mail.from
     assert_equal "Acme waitlist: dj@example.com joined (#2)", mail.subject
     body = mail.text_part.body.to_s
     assert_includes body, "What do you play on most? Traktor"
@@ -45,7 +45,7 @@ class JoinedNotificationTest < ActionDispatch::IntegrationTest
     perform_enqueued_jobs { post "/confirm/#{token}" }
     assert_empty ActionMailer::Base.deliveries
 
-    acme.update!(notify_address: "carmine@paolino.me")
+    acme.update!(notify_address: "owner@acme.example")
     other, other_token = sign_up_and_confirm("other@example.com")
     post "/confirm/#{other_token}"
     other.destroy!
@@ -53,7 +53,7 @@ class JoinedNotificationTest < ActionDispatch::IntegrationTest
     assert_empty ActionMailer::Base.deliveries
   end
 
-  test "products default to notifying carmine@paolino.me" do
-    assert_equal "carmine@paolino.me", acme.notify_address
+  test "products default to notifying owner@acme.example" do
+    assert_equal "owner@acme.example", acme.notify_address
   end
 end

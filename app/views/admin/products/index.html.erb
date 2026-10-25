@@ -1,6 +1,6 @@
 <h1>Waitlists</h1>
 <table>
-  <thead><tr><th>Product</th><th class="n">Waiting</th><th class="n">Unconfirmed</th><th class="n">Approved</th><th class="n">Key not registered</th><th></th></tr></thead>
+  <thead><tr><th>Product</th><th class="n">Waiting</th><th class="n">Unconfirmed</th><th class="n">Approved</th><th class="n">Approval unfinished</th><th></th></tr></thead>
   <tbody>
     <% @products.each do |product| %>
       <% unconfirmed, waiting, approved, pending = @counts.fetch(product.id, [0, 0, 0, 0]) %>
@@ -9,7 +9,7 @@
         <td class="n"><%= waiting %></td>
         <td class="n"><%= unconfirmed %></td>
         <td class="n"><%= approved %></td>
-        <td class="n"><%= product.approval ? pending : "" %></td>
+        <td class="n"><%= product.on_approve ? pending : "" %></td>
         <td><a href="<%= export_admin_product_path(product) %>">Export CSV</a></td>
       </tr>
     <% end %>

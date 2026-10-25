@@ -8,7 +8,10 @@ class LeavesController < PublicController
   def create
     signup = Signup.find_by_token_for(:leave, params[:token])
     @product = signup&.product
-    signup&.forget!
+    if signup
+      SignupMailer.left(signup.product, signup.email).deliver_later
+      signup.forget!
+    end
     render :gone
   end
 end

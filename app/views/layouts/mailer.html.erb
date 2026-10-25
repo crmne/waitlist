@@ -1,11 +1,33 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  </head>
-  <body style="margin:0;padding:24px;background:#f6f5f2;font:16px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1d1c1a">
-    <div style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:12px;padding:28px">
-      <%= yield %>
-    </div>
-  </body>
+<html lang="en-GB">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<% if brand["font_css_url"].present? %><link href="<%= brand["font_css_url"] %>" rel="stylesheet"><% end %>
+<title><%= message.subject %></title>
+</head>
+<body style="margin:0;padding:0;background:<%= brand["background"] %>;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:<%= brand["background"] %>;">
+  <tr><td align="center" style="padding:32px 16px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
+      <tr><td style="padding:0 4px 20px;">
+        <% if @logo_url %>
+          <a href="<%= @product.site_url %>"><img src="<%= @logo_url %>" alt="<%= @product.name %>" width="<%= brand["logo_width"] %>"<%= raw(%( height="#{brand["logo_height"]}")) if brand["logo_height"] %> style="display:block;border:0;height:auto;max-width:100%;"></a>
+        <% else %>
+          <a href="<%= @product.site_url %>" style="font-family:<%= brand["heading_font"] || brand["font"] %>;font-size:22px;font-weight:700;color:<%= brand["text"] %>;text-decoration:none;"><%= @product.name %></a>
+        <% end %>
+      </td></tr>
+      <tr><td style="background:<%= brand["card"] %>;border:1px solid <%= brand["line"] %>;border-radius:14px;padding:32px 28px;font-family:<%= brand["font"] %>;font-size:16px;line-height:1.55;color:<%= brand["text"] %>;">
+        <%= yield %>
+      </td></tr>
+      <tr><td style="padding:20px 4px 0;font-family:<%= brand["font"] %>;font-size:12.5px;line-height:1.6;color:<%= brand["muted"] %>;">
+        <% if @leave_url %><a href="<%= @leave_url %>" style="color:<%= brand["muted"] %>;">Leave the waitlist and delete my details</a> · <% end %><a href="<%= @product.privacy_url %>" style="color:<%= brand["muted"] %>;">Privacy</a> · <a href="<%= @product.site_url %>" style="color:<%= brand["muted"] %>;"><%= URI(@product.site_url).host %></a>
+        <% if brand["impressum"].present? %><br><%= brand["impressum"] %><% end %>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
 </html>

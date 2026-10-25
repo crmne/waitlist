@@ -14,21 +14,26 @@
 class GetwaitlistImport
   SOURCE = "getwaitlist"
   CONSENT_TEXT = "Signed up through the GetWaitlist form and confirmed the address there; imported without a new email."
+  UNCONFIRMED_CONSENT_TEXT = "Signed up through the GetWaitlist form but never confirmed there; imported and sent one email asking to confirm."
 
   CODE = /\A[A-Za-z0-9_-]{4,64}\z/
 
   Plan = Struct.new(:import, :unverified, :removed, :spam, :existing, :suppressed, :invalid, keyword_init: true) do
     def counts
       to_h.transform_values(&:size).merge(
+        import_unconfirmed: import.count { |row| !row["verified"] },
         imported_with_referral_credit: import.count { |row| row["amount_referred"].to_i.positive? },
         referral_credit: import.sum { |row| row["amount_referred"].to_i }
       )
     end
   end
 
-  def initialize(product:, rows:)
+  # unconfirmed: also import the signups GetWaitlist reports as unverified,
+  # as unconfirmed here (GetwaitlistImport#remind sends each one email).
+  def initialize(product:, rows:, unconfirmed: false)
     @product = product
     @rows = rows
+    @unconfirmed = unconfirmed
   end
 
   def plan
@@ -41,7 +46,7 @@ class GetwaitlistImport
         if email.blank? || !email.match?(/\A[^@\s]+@[^@\s]+\.[^@\s]+\z/) || seen.include?(email) then :invalid
         elsif row["removed_date"].present? then :removed
         elsif row["is_spam"] then :spam
-        elsif !row["verified"] then :unverified
+        elsif !row["verified"] && !@unconfirmed then :unverified
         elsif existing.include?(email) then :existing
         elsif Suppression.suppressed?(@product, email) then :suppressed
         else :import
@@ -50,6 +55,15 @@ class GetwaitlistImport
       plan[bucket] << row.merge("email" => email)
     end
     plan
+  end
+
+  # Sends each imported unconfirmed person one reminder (queued), and never
+  # a second: reminder_sent_at records it. Returns how many were queued.
+  def self.remind(product)
+    product.signups.unconfirmed.where(source: SOURCE, reminder_sent_at: nil).where.not(confirm_by: nil).find_each.count do |signup|
+      signup.update!(reminder_sent_at: Time.current, confirm_by: Time.current + product.reminder_days.days)
+      SignupMailer.reminder(signup).deliver_later
+    end
   end
 
   def apply!
@@ -61,19 +75,27 @@ class GetwaitlistImport
         signed_up = parse_time(row["created_at"]) || now
         token = row["referral_token"].to_s
         code = token if token.match?(CODE) && !@product.signups.exists?(referral_code: token)
+        verified = row["verified"].present?
         signup = @product.signups.create!(
           email: row["email"], answers: @product.clean_answers(answers_of(row)),
-          source: SOURCE, consent_text: CONSENT_TEXT,
-          created_at: signed_up, confirmed_at: now, referral_code: code
+          source: SOURCE, consent_text: verified ? CONSENT_TEXT : UNCONFIRMED_CONSENT_TEXT,
+          created_at: signed_up, confirmed_at: (now if verified), referral_code: code,
+          confirm_by: (now + @product.reminder_days.days unless verified)
         )
         by_token[token] = [signup, row] if code
       end
+      # Who referred whom among the people imported now. Someone joining
+      # unconfirmed is linked only to a referrer GetWaitlist gave no credit
+      # for it, so a later confirmation can't count the same referral twice.
       by_token.each_value do |signup, row|
-        referrer = by_token[row["referred_by_signup_token"].to_s]&.first
-        signup.update!(referred_by: referrer) if referrer && referrer != signup
+        referrer = @product.signups.find_by(referral_code: row["referred_by_signup_token"].to_s.presence)
+        next unless referrer && referrer != signup
+        next if !signup.confirmed? && referrer.imported_referrals.positive?
+        signup.update!(referred_by: referrer)
       end
       by_token.each_value do |signup, row|
-        rebuilt = signup.referrals.count
+        next unless signup.confirmed?
+        rebuilt = signup.referrals.confirmed.count
         signup.update!(referrals_count: rebuilt, imported_referrals: [row["amount_referred"].to_i - rebuilt, 0].max)
       end
     end

@@ -2,7 +2,7 @@
 
 | Data | Why | Kept |
 |---|---|---|
-| Email address | to confirm it and write when there's a place | until the person leaves, is deleted, or (unconfirmed) 7 days |
+| Email address | to confirm it and write when there's a place | until the person leaves, is deleted, or (unconfirmed) 7 days; someone imported unconfirmed from GetWaitlist and sent one reminder, 14 days from that reminder |
 | Answers to the optional questions | to choose who gets in first | with the address |
 | Signup, confirmation and approval times; where the signup came from (form or import); the consent line shown | to keep the line in order and show what was agreed | with the address |
 | Personal referral code; who referred them (if anyone); how many people they referred confirmed | to move people up the line for referrals | with the address. Nobody is told who joined through their link; deleting the referrer drops the link between them |
@@ -15,7 +15,10 @@ address, with a key that changes on every restart, in memory for at most ten
 minutes. The spam checks keep nothing: a honeypot field, a signed start time
 in the hosted form (or the time the example.com page was open), and a DNS
 lookup of the address's domain, cached in memory for at most an hour.
-The owner gets an email for each confirmed signup (the address, answers,
+Leaving sends one email confirming the deletion; its queued job holds the
+address until it runs, and finished jobs are cleared within the hour. An
+approval email may carry a licence key from the approval webhook; the key is
+never stored or queued here. The owner gets an email for each confirmed signup (the address, answers,
 place and referral count), sent through the same SES account. Cloudflare still processes requests and IPs under its own terms,
 and the SMTP provider handles each email it delivers.
 
@@ -33,8 +36,11 @@ adjusted). For Acme, example.com/privacy:
 > were invited, so we can write to you when there is a place and choose who
 > gets in first. You get a personal link; when someone joins through it and
 > confirms, we note that you referred them and move you up the line. We never
-> tell you who joined through your link. We ask you to confirm your address by email first; if you
-> don't confirm within seven days, it is deleted. The waitlist runs on our
+> tell you who joined through your link. We ask you to confirm your address
+> by email first; if you don't confirm within seven days, it is deleted. If you
+> signed up on our earlier waitlist and never confirmed, we have emailed you
+> once to ask; if you don't confirm within 14 days of that email, your address
+> is deleted. The waitlist runs on our
 > own server at Hetzner in Nuremberg, Germany (waitlist.plenty.is); we don't
 > store your IP address or use cookies there. Cloudflare passes the request
 > to our server, and Amazon Web Services EMEA SARL, from Frankfurt,

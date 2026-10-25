@@ -2,10 +2,10 @@
 <% if @product.questions.any? %>
 <table style="border-collapse:collapse;margin:0 0 16px;font-size:14px">
   <% @product.question_titles.each do |q| %>
-    <tr><td style="padding:4px 12px 4px 0;color:#5d5a55;vertical-align:top"><%= q %></td><td style="padding:4px 0"><%= @signup.answers[q].presence || "No answer" %></td></tr>
+    <tr><td style="padding:4px 12px 4px 0;color:<%= brand["muted"] %>;vertical-align:top"><%= q %></td><td style="padding:4px 0"><%= @signup.answers[q].presence || "No answer" %></td></tr>
   <% end %>
 </table>
 <% end %>
-<p style="margin:0 0 8px;font-size:14px;color:#5d5a55">Joined through someone's link: <%= @signup.referred_by_id ? "yes" : "no" %> · Their confirmed referrals: <%= @signup.effective_referrals %></p>
+<p style="margin:0 0 8px;font-size:14px;color:<%= brand["muted"] %>">Joined through someone's link: <%= @signup.referred_by_id ? "yes" : "no" %> · Their confirmed referrals: <%= @signup.effective_referrals %></p>
 <p style="margin:0 0 20px">Place in line: <strong><%= @place || "not waiting" %></strong> · Waiting now: <strong><%= @waiting %></strong></p>
-<p style="margin:0"><a href="<%= @admin_url %>" style="display:inline-block;background:#1d1c1a;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600">Open in the admin</a></p>
+<%= render "shared/email_button", url: @admin_url, label: "Open in the admin" %>

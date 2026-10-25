@@ -1,1 +1,8 @@
 <%= yield %>
+
+--
+<% if @leave_url %>Leave the waitlist and delete my details: <%= @leave_url %>
+<% end %>Privacy: <%= @product.privacy_url %>
+<%= @product.site_url %>
+<% if brand["impressum"].present? %><%= brand["impressum"] %>
+<% end %>

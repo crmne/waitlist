@@ -1,18 +1,6 @@
 require "test_helper"
 
 class AdminTest < ActionDispatch::IntegrationTest
-  FakeIssuer = Struct.new(:result) do
-    def issue(_signup) = result.is_a?(Exception) ? raise(result) : result
-  end
-
-  def with_issuer(issuer)
-    original = LicenceIssuers.method(:for)
-    LicenceIssuers.define_singleton_method(:for) { |_name| issuer }
-    yield
-  ensure
-    LicenceIssuers.define_singleton_method(:for, original)
-  end
-
   test "the admin needs the password, and is closed without one" do
     get "/admin"
     assert_response :unauthorized
@@ -44,11 +32,25 @@ class AdminTest < ActionDispatch::IntegrationTest
       post "/admin/signups/#{first.id}/approve", headers: admin_headers
     end
     assert first.reload.approved_at
-    with_issuer(FakeIssuer.new("0b7e4f7a-8f6c-4c1e-9a43-2f1d8f0b5c11")) { perform_enqueued_jobs }
-    assert_equal "0b7e4f7a-8f6c-4c1e-9a43-2f1d8f0b5c11", first.reload.licence_reference
-    assert first.licence_issued_at
+    requests = fake_webhook
+    perform_enqueued_jobs
+    assert_equal "0b7e4f7a-8f6c-4c1e-9a43-2f1d8f0b5c11", first.reload.approval_reference
+    assert first.approval_emailed_at && first.approval_acknowledged_at
+    assert_equal ["http://hooks.internal/approved", "http://hooks.internal/sent"], requests.map(&:first)
+    assert_equal "Bearer test-token", requests.first.last
+    assert_equal({ "email" => "first@example.com", "reference" => "waitlist-#{first.referral_code}", "product" => "acme" }, requests.first[1])
+    assert_equal({ "licence_id" => first.approval_reference, "reference" => "waitlist-#{first.referral_code}" }, requests.last[1])
+
+    # The key goes out in the approval email and is stored nowhere.
+    mail = ActionMailer::Base.deliveries.find { |m| m.subject == "Your Acme key" }
+    assert_includes mail.text_part.body.to_s, "Paste this key: `KEY-123`"
+    assert_includes mail.html_part.body.to_s, "KEY-123</code>"
+    assert_includes mail.text_part.body.to_s, "valid until 23 April 2027"
+    assert_not Signup.where("CAST(answers AS TEXT) LIKE '%KEY-123%' OR approval_reference LIKE '%KEY-123%'").exists?
+    assert_not SolidQueue::Job.table_exists? && SolidQueue::Job.where("arguments LIKE '%KEY-123%'").exists?
+
     get "/admin/products/acme?status=approved", headers: admin_headers
-    assert_match "Key registered, waiting to be sent", response.body
+    assert_match "Key sent", response.body
 
     get "/admin/products/acme/export", headers: admin_headers
     assert_equal "text/csv", response.media_type
@@ -70,21 +72,46 @@ class AdminTest < ActionDispatch::IntegrationTest
     assert_nil pending.reload.approved_at
   end
 
-  test "an approval whose key wasn't registered can be tried again" do
+  test "an approval whose webhook was down, or whose email failed, can be tried again" do
     signup = confirmed_signup("dj@example.com")
     post "/admin/signups/#{signup.id}/approve", headers: admin_headers
     clear_enqueued_jobs
-    with_issuer(FakeIssuer.new(LicenceIssuers::AcmeLicence::Error.new("down"))) do
-      ApprovalJob.perform_now(signup)
-    end
-    assert_nil signup.reload.licence_issued_at
-
+    fake_webhook(fail_with: 503)
+    ApprovalJob.perform_now(signup)
+    assert_nil signup.reload.approval_registered_at
     get "/admin/products/acme?status=approved", headers: admin_headers
     assert_match "Key not registered yet", response.body
-    assert_enqueued_with(job: ApprovalJob, args: [signup]) do
-      post "/admin/signups/#{signup.id}/register_licence", headers: admin_headers
+
+    # The webhook works, but the email fails.
+    requests = fake_webhook
+    failing = Class.new(StandardError)
+    original = SignupMailer.method(:approved)
+    SignupMailer.define_singleton_method(:approved) { |*| raise failing, "SMTP down" }
+    begin
+      assert_raises(failing) { ApprovalJob.perform_now(signup) }
+    ensure
+      SignupMailer.define_singleton_method(:approved, original)
     end
-    with_issuer(FakeIssuer.new("0b7e4f7a-8f6c-4c1e-9a43-2f1d8f0b5c11")) { perform_enqueued_jobs }
-    assert signup.reload.licence_issued_at
+    assert signup.reload.approval_registered_at
+    assert signup.approval_failed_at
+    assert_nil signup.approval_emailed_at
+    get "/admin/products/acme?status=approved", headers: admin_headers
+    assert_match "Key registered, email failed", response.body
+    assert_select "button", text: "Try again"
+
+    assert_enqueued_with(job: ApprovalJob, args: [signup]) do
+      post "/admin/signups/#{signup.id}/retry_approval", headers: admin_headers
+    end
+    perform_enqueued_jobs
+    assert signup.reload.approval_emailed_at
+    assert_equal 1, ActionMailer::Base.deliveries.count { |m| m.subject == "Your Acme key" }
+    assert_equal 3, requests.size # registered twice (idempotent), told once
+  end
+
+  test "a product with no approval step just records the approval" do
+    plain = Product.find_by!(slug: "plain")
+    signup = plain.signups.create!(email: "dj@example.com", consent_text: "t", confirmed_at: Time.current)
+    assert_no_enqueued_jobs(only: ApprovalJob) { signup.approve! }
+    assert_equal "approved", signup.approval_state
   end
 end

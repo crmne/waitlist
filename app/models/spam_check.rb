@@ -1,7 +1,7 @@
 # The too-fast half of invisible_captcha, without a session: a form that is
 # sent less than InvisibleCaptcha.timestamp_threshold seconds after it was
 # shown is a bot. The hosted form carries a signed start time (`started`);
-# the example.com script sends how long its page was open (`elapsed_ms`).
+# a product site's own script sends how long its page was open (`elapsed_ms`).
 module SpamCheck
   def self.started_token(now = Time.current) = verifier.generate(now.to_f, expires_in: 1.day, purpose: :form_started)
 

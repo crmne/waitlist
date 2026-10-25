@@ -1,0 +1,4 @@
+<% if @referral_url && @product.places_per_referral.positive? %>
+<p style="margin:0 0 8px;font-size:15px;color:<%= brand["muted"] %>;"><%= intro %> For everyone who joins through it and confirms their email, you move up <%= @product.places_per_referral %> places. We never tell you who they are.</p>
+<p style="margin:0 0 20px;font-size:15px;"><a href="<%= @referral_url %>" style="color:<%= brand["text"] %>;word-break:break-all;"><%= @referral_url %></a></p>
+<% end %>

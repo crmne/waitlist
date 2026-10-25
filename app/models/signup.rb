@@ -52,7 +52,7 @@ class Signup < ApplicationRecord
   def confirm!
     return if confirmed?
     transaction do
-      update!(confirmed_at: Time.current)
+      update!(confirmed_at: Time.current, confirm_by: nil)
       Suppression.lift(product, email)
     end
     credit_referrer
@@ -88,8 +88,23 @@ class Signup < ApplicationRecord
     raise ArgumentError, "only someone who confirmed can be approved" unless confirmed?
     return if approved_at
     update!(approved_at: Time.current)
-    ApprovalJob.perform_later(self) if product.licence_issuer
+    ApprovalJob.perform_later(self) if product.on_approve
   end
+
+  # Where the product's approval step stands, for the admin: nil (not
+  # approved), "approved" (no approval step), "pending" (not registered
+  # yet), "registered" (registered, no email from here), "failed" (the
+  # approval email failed) or "sent".
+  def approval_state
+    return unless approved_at
+    return "approved" unless product.on_approve
+    return "sent" if approval_emailed_at
+    return "failed" if approval_failed_at
+    approval_registered_at ? "registered" : "pending"
+  end
+
+  # Approved, but the approval step didn't finish: the admin can try again.
+  def approval_retryable? = %w[pending failed].include?(approval_state)
 
   # Deletes the person and remembers only a digest of the address, so an
   # import can't add them back.

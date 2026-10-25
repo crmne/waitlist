@@ -1,18 +1,11 @@
-Hello,
+Confirm your place
 
-Someone, hopefully you, asked to join the <%= @product.name %> waitlist with this address. To confirm your place, open this link:
+Someone, hopefully you, asked to join the <%= @product.name %> waitlist with this address. Confirm it to take your place in line:
 
 <%= @confirm_url %>
 
-The link works for <%= Rails.configuration.x.confirmation_validity.in_days.to_i %> days. If you don't confirm, your address is deleted after that and you won't hear from us again.
-
-If this wasn't you, ignore this email.
-<% if @product.places_per_referral.positive? %>
-Once you've confirmed, share your own link. For everyone who joins through it and confirms their email, you move up <%= @product.places_per_referral %> places:
+The link works for <%= @validity_days %> days. If you don't confirm, your address is deleted and you won't hear from us again. If this wasn't you, ignore this email.
+<% if @referral_url && @product.places_per_referral.positive? %>
+Once you've confirmed, share your own link. For everyone who joins through it and confirms their email, you move up <%= @product.places_per_referral %> places. We never tell you who they are:
 <%= @referral_url %>
 <% end %>
-You can leave the list and delete your details at any time:
-<%= @leave_url %>
-
-<%= @product.name %>, <%= @product.site_url %>
-Privacy: <%= @product.privacy_url %>
