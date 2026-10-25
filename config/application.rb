@@ -26,8 +26,9 @@ module Waitlist
 
     # Signups that never confirm are deleted after this long (docs/privacy.md).
     config.x.unconfirmed_retention = 7.days
-    # A confirmation link works for this long.
-    config.x.confirmation_validity = 7.days
+    # A confirmation link's signature lasts this long; the real deadline is
+    # the record's own deletion (a week, or confirm_by for someone reminded).
+    config.x.confirmation_validity = 30.days
     # A second confirmation email for the same address waits at least this long.
     config.x.confirmation_resend_after = 15.minutes
 

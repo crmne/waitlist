@@ -23,7 +23,8 @@ class Signup < ApplicationRecord
   scope :in_line, -> { order(:created_at, :id) }
 
   # Neither token is stored. A confirmation link stops working once the
-  # address is confirmed or after config.x.confirmation_validity; the leave
+  # address is confirmed or the unconfirmed record is deleted (RetentionJob,
+  # well before config.x.confirmation_validity); the leave
   # link works until the person is deleted.
   generates_token_for :confirmation, expires_in: Rails.configuration.x.confirmation_validity do
     confirmed_at

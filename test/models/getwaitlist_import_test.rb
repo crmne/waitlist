@@ -93,6 +93,10 @@ class GetwaitlistUnconfirmedImportTest < ActiveSupport::TestCase
     assert_includes mail.text_part.body.to_s, "You asked to join the Acme waitlist on acme.example"
     assert_includes mail.text_part.body.to_s, "This is the only reminder."
 
+    # The link still works on day 13.
+    token = late.generate_token_for(:confirmation)
+    travel(13.days) { assert_equal late, Signup.find_by_token_for(:confirmation, token) }
+
     # Not deleted by the one-week rule while their two weeks run.
     RetentionJob.perform_now
     assert Signup.exists?(late.id)
