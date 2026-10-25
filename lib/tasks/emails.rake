@@ -14,7 +14,7 @@ namespace :emails do
       "confirmation" => -> { SignupMailer.confirmation(fake.(900_001)) },
       "reminder" => -> { SignupMailer.reminder(fake.(900_002, confirm_by: product.reminder_days.days.from_now)) },
       "approved" => -> {
-        variables = product.approval_email_variables.merge("licence_key" => "SAMPLE-KEY-NOT-VALID", "expires_at" => 180.days.from_now.utc.iso8601)
+        variables = product.approval_email_variables.merge("key" => "SAMPLE-KEY-NOT-VALID", "expires_at" => 180.days.from_now.utc.iso8601)
         SignupMailer.approved(fake.(900_003, confirmed_at: Time.current), variables)
       },
       "left" => -> { SignupMailer.left(product, to) },

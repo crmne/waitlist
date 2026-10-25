@@ -31,7 +31,7 @@ module ActiveSupport
         requests << [uri.to_s, ::JSON.parse(request.body), request["Authorization"]]
         next WebhookResponse.new(fail_with.to_s, "{}") if fail_with
         if uri.path == "/approved"
-          WebhookResponse.new("201", ::JSON.generate(licence_id: "0b7e4f7a-8f6c-4c1e-9a43-2f1d8f0b5c11", licence_key: key, expires_at: "2027-04-23T10:00:00Z"))
+          WebhookResponse.new("201", ::JSON.generate(licence_id: "0b7e4f7a-8f6c-4c1e-9a43-2f1d8f0b5c11", key: key, expires_at: "2027-04-23T10:00:00Z"))
         else
           WebhookResponse.new("200", "{}")
         end

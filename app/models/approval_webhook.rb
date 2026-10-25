@@ -11,7 +11,7 @@ require "net/http"
 # POST url with {"email", "reference", "product"}. A 2xx JSON answer must
 # carry id_field; its other fields become variables for the approval email
 # (and are never stored). After the approval email is sent, POST sent_url
-# with {id_field => id, "reference"}. Anything but a 2xx raises Error.
+# with {"reference"}. Anything but a 2xx raises Error.
 class ApprovalWebhook
   class Error < StandardError; end
 
@@ -36,7 +36,7 @@ class ApprovalWebhook
 
   def acknowledge(signup)
     url = @config["sent_url"].presence or return
-    post(url, id_field => signup.approval_reference, "reference" => self.class.reference_for(signup))
+    post(url, reference: self.class.reference_for(signup))
   end
 
   def acknowledges? = @config["sent_url"].present?

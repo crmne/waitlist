@@ -39,7 +39,7 @@ class AdminTest < ActionDispatch::IntegrationTest
     assert_equal ["http://hooks.internal/approved", "http://hooks.internal/sent"], requests.map(&:first)
     assert_equal "Bearer test-token", requests.first.last
     assert_equal({ "email" => "first@example.com", "reference" => "waitlist-#{first.referral_code}", "product" => "acme" }, requests.first[1])
-    assert_equal({ "licence_id" => first.approval_reference, "reference" => "waitlist-#{first.referral_code}" }, requests.last[1])
+    assert_equal({ "reference" => "waitlist-#{first.referral_code}" }, requests.last[1])
 
     # The key goes out in the approval email and is stored nowhere.
     mail = ActionMailer::Base.deliveries.find { |m| m.subject == "Your Acme key" }
