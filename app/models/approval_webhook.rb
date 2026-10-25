@@ -8,7 +8,7 @@ require "net/http"
 #     id_field: id                                  # where the answer names what it created
 #     sent_url: http://hooks.internal:3000/sent      # optional: told once the email went out
 #
-# POST url with {"email", "reference", "product"}. A 2xx JSON answer must
+# POST url with {"email", "reference"} (each product has its own url). A 2xx JSON answer must
 # carry id_field; its other fields become variables for the approval email
 # (and are never stored). After the approval email is sent, POST sent_url
 # with {"reference"}. Anything but a 2xx raises Error.
@@ -28,7 +28,7 @@ class ApprovalWebhook
 
   # Returns [id, fields].
   def register(signup)
-    answer = post(@config.fetch("url"), email: signup.email, reference: self.class.reference_for(signup), product: signup.product.slug)
+    answer = post(@config.fetch("url"), email: signup.email, reference: self.class.reference_for(signup))
     id = answer[id_field]
     raise Error, "the approval webhook answered without #{id_field}" unless id.is_a?(String) && id.match?(/\A[A-Za-z0-9._:-]{1,100}\z/)
     [id, answer.except(id_field)]

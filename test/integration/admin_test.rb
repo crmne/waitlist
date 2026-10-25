@@ -38,7 +38,7 @@ class AdminTest < ActionDispatch::IntegrationTest
     assert first.approval_emailed_at && first.approval_acknowledged_at
     assert_equal ["http://hooks.internal/approved", "http://hooks.internal/sent"], requests.map(&:first)
     assert_equal "Bearer test-token", requests.first.last
-    assert_equal({ "email" => "first@example.com", "reference" => "waitlist-#{first.referral_code}", "product" => "acme" }, requests.first[1])
+    assert_equal({ "email" => "first@example.com", "reference" => "waitlist-#{first.referral_code}" }, requests.first[1])
     assert_equal({ "reference" => "waitlist-#{first.referral_code}" }, requests.last[1])
 
     # The key goes out in the approval email and is stored nowhere.
