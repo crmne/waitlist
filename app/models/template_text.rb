@@ -1,6 +1,6 @@
 # A small email template: the first line is "Subject: ...", then a body in a
-# little Markdown (paragraphs, `code`, **bold**, <https://links>, and "- "
-# lists), with {{variables}}. A missing variable raises, so an email is never
+# little Markdown (paragraphs, `code`, **bold**, <https://links>, "- " and
+# "1. " lists), with {{variables}}. A missing variable raises, so an email is never
 # sent with a hole in it. Times in ISO 8601 also get a "_date" variable
 # ("25 April 2027").
 class TemplateText
@@ -22,6 +22,9 @@ class TemplateText
       if block.lines.all? { |line| line.start_with?("- ") }
         items = block.lines.map { |line| "<li style=\"margin:0 0 6px\">#{inline(line.delete_prefix("- ").strip)}</li>" }
         "<ul style=\"margin:0 0 16px;padding-left:20px\">#{items.join}</ul>"
+      elsif block.lines.all? { |line| line.match?(/\A\d+\. /) }
+        items = block.lines.map { |line| "<li style=\"margin:0 0 6px\">#{inline(line.sub(/\A\d+\. /, "").strip)}</li>" }
+        "<ol style=\"margin:0 0 16px;padding-left:22px\">#{items.join}</ol>"
       else
         "<p style=\"margin:0 0 16px\">#{block.lines.map { |line| inline(line.strip) }.join("<br>")}</p>"
       end

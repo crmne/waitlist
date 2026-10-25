@@ -111,3 +111,15 @@ class GetwaitlistUnconfirmedImportTest < ActiveSupport::TestCase
     assert_nil solo.reload.confirm_by
   end
 end
+
+class TemplateTextTest < ActiveSupport::TestCase
+  test "subject, variables, code, links and numbered lists" do
+    t = TemplateText.new("Subject: Your {{product}} key\n\nHi,\n\n`{{key}}`\n\n1. Download: <https://x.example/d>\n2. Paste it.\n", "product" => "Acme", "key" => "K-1")
+    assert_equal "Your Acme key", t.subject
+    assert_includes t.text, "1. Download: <https://x.example/d>"
+    assert_includes t.html, "<ol"
+    assert_includes t.html, %(<a href="https://x.example/d")
+    assert_includes t.html, "K-1</code>"
+    assert_raises(TemplateText::MissingVariable) { TemplateText.new("Subject: {{nope}}\n\nx", {}) }
+  end
+end
