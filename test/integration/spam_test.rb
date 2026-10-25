@@ -16,6 +16,16 @@ class SpamTest < ActionDispatch::IntegrationTest
     assert_quietly_refused
   end
 
+  test "quiet refusals and the rate limit still answer the product's site with CORS" do
+    post "/p/acme/signups", params: { email: "bot@example.com", elapsed_ms: 10 }, as: :json, headers: { "Origin" => "https://example.com" }
+    assert_equal "https://example.com", response.headers["Access-Control-Allow-Origin"]
+    assert_quietly_refused
+    10.times { post "/p/acme/signups", params: { email: "x@example.com", elapsed_ms: 9000 }, as: :json }
+    post "/p/acme/signups", params: { email: "y@example.com", elapsed_ms: 9000 }, as: :json, headers: { "Origin" => "https://example.com" }
+    assert_response :too_many_requests
+    assert_equal "https://example.com", response.headers["Access-Control-Allow-Origin"]
+  end
+
   test "a form sent within three seconds, or with no timing at all, is refused quietly" do
     post "/p/acme/signups", params: { email: "bot@example.com", elapsed_ms: 900 }, as: :json
     assert_quietly_refused

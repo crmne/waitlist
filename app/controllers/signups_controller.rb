@@ -1,6 +1,8 @@
 class SignupsController < PublicController
   before_action :find_product
-  after_action :allow_cross_origin, only: %i[create preflight]
+  # Before anything that may answer early (rate limit, spam), so those
+  # answers reach the product's own pages too.
+  before_action :allow_cross_origin, only: %i[create preflight]
   after_action :allow_framing, only: %i[new thanks]
 
   # Per address, in memory only: the bucket is an HMAC of the address with a
