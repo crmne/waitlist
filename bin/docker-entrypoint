@@ -1,0 +1,7 @@
+#!/bin/bash -e
+# Prepare both databases and the products before the server starts.
+if [ "$1" == "bundle" ] && [ "$3" == "puma" ]; then
+  ./bin/rails db:prepare
+  ./bin/rails products:sync >/dev/null
+fi
+exec "$@"
