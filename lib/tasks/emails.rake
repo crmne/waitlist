@@ -1,10 +1,11 @@
 namespace :emails do
-  desc "Send one sample of each email of PRODUCT to TO, with fake data and [Sample] in the subject. KINDS=confirmation,reminder,approved,left,joined (default: all). APPROVAL_TEMPLATE=path uses that template for 'approved' when the product has none."
+  desc "Send one sample of each email of PRODUCT to TO, with fake data and [Sample] in the subject. KINDS=confirmation,reminder,approved,left,joined (default: all). APPROVAL_TEMPLATE=path (and APPROVAL_VARIABLES=json) use that template for 'approved' when the product has none."
   task :sample, [:product, :to] => :environment do |_, args|
     product = Product.find_by!(slug: args.fetch(:product))
     to = args.fetch(:to)
     if ENV["APPROVAL_TEMPLATE"].present? && product.approval_email_template.nil?
-      product.settings = product.settings.merge("approval_email" => { "template" => ENV["APPROVAL_TEMPLATE"], "variables" => product.approval_email_variables })
+      variables = ENV["APPROVAL_VARIABLES"].present? ? JSON.parse(ENV["APPROVAL_VARIABLES"]) : product.approval_email_variables
+      product.settings = product.settings.merge("approval_email" => { "template" => ENV["APPROVAL_TEMPLATE"], "variables" => variables })
     end
     answers = product.questions.to_h { |q| [q["question"], q["options"].first] }
     fake = ->(id, **attributes) { Signup.new(id:, product:, email: to, consent_text: "sample", referral_code: "SAMPLE#{id}", created_at: Time.current, answers:, **attributes) }
