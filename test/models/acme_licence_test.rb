@@ -26,7 +26,7 @@ class AcmeLicenceTest < ActiveSupport::TestCase
     assert_equal "POST", request.method
     assert_equal "Bearer secret-token", request["Authorization"]
     assert_equal "application/json", request["Content-Type"]
-    assert_equal({ "email" => "dj@example.com", "reference" => "waitlist-signup-#{@signup.id}" }, JSON.parse(request.body))
+    assert_equal({ "email" => "dj@example.com", "reference" => "waitlist-#{@signup.referral_code}" }, JSON.parse(request.body))
     assert_nil request["CF-Connecting-IP"]
   end
 

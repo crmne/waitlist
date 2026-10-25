@@ -9,7 +9,7 @@ module LicenceIssuers
   # The request goes over the Docker network (`kamal`) to licence-server's
   # origin alias, never through the public tunnel: licence-server answers 404
   # to anything carrying Cloudflare's headers. It is idempotent on the
-  # reference, so a retried job registers nothing twice.
+  # reference (reference_for), so a retried job registers nothing twice.
   class AcmeLicence
     class Error < StandardError; end
 
@@ -23,7 +23,9 @@ module LicenceIssuers
       @transport = transport || method(:net_http)
     end
 
-    def self.reference_for(signup) = "waitlist-signup-#{signup.id}"
+    # Stable and never reused: SQLite reuses the ids of deleted rows, so the
+    # signup's random referral code names it, not its id.
+    def self.reference_for(signup) = "waitlist-#{signup.referral_code}"
 
     # Returns licence-server's licence_id. Raises on anything but a 2xx answer
     # with a licence_id, so ApprovalJob retries.

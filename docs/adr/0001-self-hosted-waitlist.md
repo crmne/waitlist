@@ -86,7 +86,8 @@ are signed on Carmine's machine, never by a server. Approving a Acme
 signup enqueues `ApprovalJob`, which calls `LicenceIssuers::AcmeLicence`:
 `POST http://licence-server-origin:3000/internal/licences` over Kamal's
 `kamal` Docker network, with the shared bearer token from tmpfs and
-`{"email", "reference": "waitlist-signup-ID"}`. licence-server records the
+`{"email", "reference": "waitlist-REFERRALCODE"}` (the signup's random
+referral code: SQLite reuses deleted rows' ids). licence-server records the
 licence (idempotent on the reference) and answers its `licence_id`, which
 this app stores with the time (`licence_reference`, `licence_issued_at`);
 the admin then says "Key registered, waiting to be sent". Any other answer
