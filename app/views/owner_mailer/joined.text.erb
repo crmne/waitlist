@@ -1,0 +1,10 @@
+<%= @signup.email %> confirmed their place on the <%= @product.name %> waitlist.
+
+<% @product.question_titles.each do |q| -%>
+<%= q %> <%= @signup.answers[q].presence || "(no answer)" %>
+<% end -%>
+
+Place in line: <%= @place || "not waiting" %>
+Waiting now: <%= @waiting %>
+
+<%= @admin_url %>

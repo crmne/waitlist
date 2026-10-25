@@ -8,6 +8,9 @@
 #   from            the sender of the confirmation email (must be a verified
 #                   sender of the SMTP account, docs/deployment.md)
 #   reply_to        where replies go
+#   notify          who is emailed when someone confirms their signup
+#                   (default carmine@paolino.me; empty for nobody). Imports
+#                   never notify.
 #   allowed_origins sites whose scripts may post to the JSON endpoint and
 #                   that may frame the hosted form
 #   thanks_url      optional: where a plain HTML form post returns to,
@@ -23,6 +26,7 @@ acme:
   privacy_url: https://example.com/privacy
   from: Acme <hello@example.com>
   reply_to: hello@plenty.is
+  notify: carmine@paolino.me
   allowed_origins:
     - https://example.com
   approval: acme_licence

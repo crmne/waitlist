@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_25_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_25_180000) do
   create_table "products", force: :cascade do |t|
     t.string "slug", null: false
     t.string "name", null: false
@@ -25,6 +25,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_25_120000) do
     t.json "questions", default: [], null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "notify_address"
     t.index ["slug"], name: "index_products_on_slug", unique: true
   end
 

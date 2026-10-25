@@ -43,6 +43,7 @@ button.danger { background: var(--danger); color: #fff; }
 .admin .actions form { margin: 0; }
 .admin .actions button { margin: 0; padding: .35rem .7rem; font-size: .85rem; }
 .admin .date { white-space: nowrap; }
+.admin tr:target td { background: color-mix(in srgb, var(--accent) 8%, transparent); }
 .admin .quiet { color: var(--muted); font-size: .85rem; }
 .tabs { display: flex; gap: 1rem; margin: .5rem 0; font-size: .9rem; }
 .tabs a { color: var(--muted); text-decoration: none; }

@@ -43,12 +43,15 @@ class Signup < ApplicationRecord
     product.signups.waiting.where("created_at < ? OR (created_at = ? AND id < ?)", created_at, created_at, id).count + 1
   end
 
+  # Only someone confirming through the link gets here; imports set
+  # confirmed_at directly, so they never notify.
   def confirm!
     return if confirmed?
     transaction do
       update!(confirmed_at: Time.current)
       Suppression.lift(product, email)
     end
+    NotifyJoinedJob.perform_later(self) if product.notify_address
   end
 
   def can_send_confirmation?

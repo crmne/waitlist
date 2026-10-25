@@ -16,7 +16,7 @@
   </thead>
   <tbody>
     <% @signups.each_with_index do |signup, i| %>
-      <tr>
+      <tr id="signup-<%= signup.id %>">
         <td class="n"><%= i + 1 %></td>
         <td><%= signup.email %><% if signup.source != "form" %> <span class="tag"><%= signup.source %></span><% end %></td>
         <td class="date"><%= signup.created_at.to_date.iso8601 %></td>

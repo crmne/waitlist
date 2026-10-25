@@ -1,5 +1,6 @@
 class Product < ApplicationRecord
   CONFIG = Rails.root.join("config/products.yml")
+  DEFAULT_NOTIFY = "carmine@paolino.me"
   SLUG = /\A[a-z0-9][a-z0-9-]{0,40}\z/
 
   has_many :signups, dependent: :destroy
@@ -23,6 +24,7 @@ class Product < ApplicationRecord
           privacy_url: attributes.fetch("privacy_url"),
           from_address: attributes.fetch("from"),
           reply_to: attributes["reply_to"],
+          notify_address: attributes.fetch("notify", DEFAULT_NOTIFY).presence,
           allowed_origins: Array(attributes["allowed_origins"]),
           thanks_url: attributes["thanks_url"],
           approval: attributes["approval"],
