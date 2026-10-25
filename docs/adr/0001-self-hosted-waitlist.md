@@ -1,31 +1,20 @@
-# 0001: One small self-hosted Rails waitlist for every product
+# 0001: One small self-hosted Rails waitlist for several products
 
-Date: 2026-10-25. Status: accepted, deployed on 2026-10-25.
+Date: 2026-10-25. Status: accepted.
 
 ## Context
 
-Carmine decided on 2026-10-25 to stop using GetWaitlist (Waitlist LLC,
-USA): it offers no data processing agreement and no transfer safeguard
-(Acme privacy self-check, finding 1). Every waitlist he runs moves to one
-self-hosted service. Acme's alpha is private with per-person licence keys,
-so the Acme waitlist is how people ask for a key, and approving someone
-must lead to a key.
-
-GetWaitlist held five waitlists on 2026-10-25 (counts only):
-
-| Waitlist | Signups | Verified | Form today |
-|---|---|---|---|
-| Acme (33098) | 50 | 30 | live on example.com |
-| Chat with Work (18565) | 313 | 3 (verification was off) | retired: `/waitlist` redirects to sign-up |
-| Lineup (26073) | 24 | 1 | closed; lineup.website redirects to plenty.is |
-| FlareHub (26074) | 3 | 0 | none; flarehub.app redirects to plenty.is |
-| Vettr (22859) | 2 | 1 | vettr.ai no longer uses it and is not in our DNS |
+The products used a hosted waitlist service in the USA with no data
+processing agreement and no transfer safeguard. Every waitlist moves to one
+self-hosted service, run on the same host and stack as the products' own
+Rails apps. One product's alpha is private with per-person licence keys, so
+its waitlist is how people ask for a key, and approving someone must lead to
+a key.
 
 Requirements: several products, each with its own form (embeddable or a
 plain HTML form endpoint) and confirmation email (double opt-in); data on
 our server with no IP addresses stored; a protected admin with counts and
-export; leaving and deletion; and for Acme a hook that issues a licence
-key when Carmine approves someone.
+export; leaving and deletion; and a hook that runs when someone is approved.
 
 ## Options
 
@@ -34,10 +23,10 @@ key when Carmine approves someone.
 - listmonk (AGPL-3.0, Go, actively maintained) is the strongest: lists,
   double opt-in, public subscription forms, admin, export, unsubscribe, and
   opt-in IP recording that can be turned off. But it needs PostgreSQL (one
-  more database container on a host with about 2.5 GB available), it is a
-  newsletter tool with campaigns we don't want, one opt-in template serves
-  every list, and it has no approval step: issuing a Acme licence would
-  mean polling its API from another service.
+  more database container on a small shared host), it is a newsletter tool
+  with campaigns we don't want, one opt-in template serves every list, and
+  it has no approval step: issuing a licence would mean polling its API from
+  another service.
 - Keila (AGPL, Elixir) and Mautic (PHP, heavy) are newsletter or marketing
   suites with the same gaps and more weight.
 - Projects that call themselves waitlists (Launchlist, Chirp, Waiting
@@ -45,64 +34,30 @@ key when Carmine approves someone.
   Cloudflare Workers app and a paid product: none offers double opt-in,
   admin, export and Docker together under a clear open-source licence.
 
-**A small Rails 8 app** on the stack and host licence-server already uses:
-SQLite, Solid Queue inside Puma, Kamal with no shared proxy, a Cloudflare
-Tunnel, secrets on tmpfs. The whole thing is three tables, five public
-routes and an admin, under 900 lines plus tests. It stores exactly what we
-choose (no IP, no referral data), the approval hook is a method call, and
-it runs in one 256 MB container plus a 64 MB tunnel.
+**A small Rails 8 app**: SQLite, Solid Queue inside Puma, Kamal with no
+shared proxy, a Cloudflare Tunnel, secrets on tmpfs. Three tables, five
+public routes and an admin. It stores exactly what we choose (no IP), the
+approval hook is a method call, and it runs in one small container.
 
 ## Decision
 
-Build the small Rails app (`crmne/waitlist`), served at
-`waitlist.plenty.is`, because it is less to run than listmonk with
-PostgreSQL, matches the existing deployment exactly, and does the one thing
-no candidate does: approval that issues a licence. Its parts:
+Build the small Rails app. Products come from a products file (synced on
+boot, never deleted by a sync). Each has a hosted form (frameable by its own
+sites) and a JSON endpoint; the answer is the same whether or not the
+address was already there. Double opt-in: the confirmation email links to a
+page with a button, so a mail scanner following links confirms nobody.
+Tokens are signed, never stored. Unconfirmed signups are deleted after seven
+days. Every email has a leave link that deletes the person; a keyed digest
+of the address is kept so an import can't add them back. The admin (HTTP
+Basic, password from tmpfs) shows counts, lists people in line, approves,
+deletes after a confirmation page, and exports CSV.
 
-- Products come from `config/products.yml` (synced on boot, never deleted
-  by a sync): name, sites allowed to post and frame, sender, privacy link,
-  optional questions, optional approval step, how long approved people are
-  kept.
-- `GET /p/:product` is a hosted form (frameable by the product's sites);
-  `POST /p/:product/signups` takes a plain HTML form post or JSON (CORS for
-  the product's sites). The answer is the same whether or not the address
-  was already there. A honeypot field and a per-address rate limit (on an
-  HMAC of the address, in memory only) stop casual abuse.
-- Double opt-in: the confirmation email links to a page with a button, so
-  a mail scanner following links confirms nobody. Tokens are signed, never
-  stored. Unconfirmed signups are deleted after seven days.
-- Every email and page has a leave link that deletes the person. A keyed
-  digest of the address is kept so an import can't add them back.
-- The admin (HTTP Basic, password from tmpfs) shows counts per product,
-  lists people in line with their answers, approves, deletes (after a
-  confirmation page naming the address) and exports CSV.
-- No referral positions: places in line follow signup time, and Carmine
-  chooses who gets in. The Acme site's "share your link to move up" goes.
-
-## Licence keys
-
-Updated 2026-10-25 for licence-server's alpha licences (its ADR 0009). Keys
-are signed on Carmine's machine, never by a server. Approving a Acme
-signup enqueues `ApprovalJob`, which calls `LicenceIssuers::AcmeLicence`:
-`POST http://licence-server-origin:3000/internal/licences` over Kamal's
-`kamal` Docker network, with the shared bearer token from tmpfs and
-`{"email", "reference": "waitlist-REFERRALCODE"}` (the signup's random
-referral code: SQLite reuses deleted rows' ids). licence-server records the
-licence (idempotent on the reference) and answers its `licence_id`, which
-this app stores with the time (`licence_reference`, `licence_issued_at`);
-the admin then says "Key registered, waiting to be sent". Any other answer
-raises, the job retries with backoff, and the admin shows "Key not
-registered yet" with a "Try again" button. Carmine's `bin/issue-licence
---pending` signs and emails the key. This app never sees a key, and
-licence-server refuses the route through the public tunnel.
+Approval runs a product's webhook (see ADR 0002).
 
 ## Consequences
 
-- One more small container and tunnel on prod, both capped.
-- Mail goes through SES in Frankfurt (what Chat with Work
-  already uses), with example.com as a verified identity and a sending
-  user limited to it. Without its credentials on the host,
-  nothing is sent.
-- GetWaitlist signups move with `bin/getwaitlist-pull` and
-  `getwaitlist:import` (docs/migration.md): only verified people, as
-  confirmed, without an email.
+- One small container and its tunnel on the host.
+- Mail needs an SMTP account; until its credentials are installed, mail is
+  written to the storage volume and nobody is emailed.
+- Signups move from the hosted service with `bin/getwaitlist-pull` and
+  `getwaitlist:import`: verified people as confirmed, without an email.

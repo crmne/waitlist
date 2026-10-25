@@ -4,16 +4,16 @@ Date: 2026-10-25. Status: accepted.
 
 ## Context
 
-Carmine wants the waitlist open-sourceable, every email branded per
-product, a one-click Approve that gives a Acme licence key, and the
-GetWaitlist signups who never confirmed asked once more.
+The waitlist is to be open-sourceable, every email branded per product,
+Approve should give out a licence key in one click, and the GetWaitlist
+signups who never confirmed should be asked once more.
 
 ## Decision
 
 - Nothing product-specific in code. Products come from `PRODUCTS_FILE`
-  (`config/products.yml` is an example); this deployment's are in
-  `deploy/products.yml` with their brand folders. Deployment scripts are in
-  `deploy/` too.
+  (`config/products.yml` is an example). A deployment keeps its products
+  file, brand folders and scripts in its own repository and layers them onto
+  the image.
 - Approval is a generic webhook (`on_approve`: url, token file, `id_field`,
   `sent_url`, admin labels). The app stores only the returned id. The
   answer's other fields fill the approval email (`approval_email`, a
@@ -40,5 +40,5 @@ GetWaitlist signups who never confirmed asked once more.
 
 ## Consequences
 
-Acme's approval email turns on when licence-server's route signs and returns
-the key: add `approval_email` and `sent_url` to `deploy/products.yml`.
+A product's approval email turns on when its webhook returns the fields the
+template uses: add `approval_email` and `sent_url` to its products file.
