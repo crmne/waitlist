@@ -7,6 +7,11 @@
     <meta name="referrer" content="no-referrer">
     <%= stylesheet_link_tag "application" %>
     <%= javascript_include_tag "copy", defer: true %>
+    <% if @product&.analytics && !@embedded && content_for?(:analytics) %>
+      <meta name="analytics" content="<%= { url: "#{@product.analytics["page_url"].chomp("/")}/#{yield(:analytics)}", events: @analytics_events || [] }.to_json %>">
+      <%= javascript_include_tag "analytics", defer: true %>
+      <script defer src="<%= @product.analytics["plausible_script"] %>"></script>
+    <% end %>
   </head>
   <body class="<%= "embedded" if @embedded %>">
     <main class="card">

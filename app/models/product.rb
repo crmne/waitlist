@@ -45,7 +45,8 @@ class Product < ApplicationRecord
             "brand" => attributes["brand"] || {},
             "on_approve" => attributes["on_approve"],
             "approval_email" => attributes["approval_email"],
-            "reminder_days" => attributes.fetch("reminder_days", 14)
+            "reminder_days" => attributes.fetch("reminder_days", 14),
+            "analytics" => attributes["analytics"]
           }.compact
         )
       end
@@ -82,6 +83,20 @@ class Product < ApplicationRecord
   end
 
   def brand = DEFAULT_BRAND.merge(settings.fetch("brand", {}).compact)
+
+  # Optional cookieless counting with Plausible: the product's script and the
+  # address its events are reported under (page_url), so the page's own
+  # address, which may carry a token, never leaves. Nil when not set up.
+  def analytics
+    a = settings["analytics"]
+    return unless a.is_a?(Hash) && a["plausible_script"].to_s.start_with?("https://") && a["page_url"].to_s.start_with?("https://")
+    a.slice("plausible_script", "page_url")
+  end
+
+  def analytics_origin
+    uri = URI.parse(analytics["plausible_script"]) if analytics
+    "#{uri.scheme}://#{uri.host}#{":#{uri.port}" unless uri.port == uri.default_port}" if uri
+  end
 
   # The sender's display name, for the footer and headings.
   def sender_name = Mail::Address.new(from_address).display_name.presence || name

@@ -50,6 +50,9 @@ acme:
         - Under 1000
         - 1000 to 5000
         - Over 20000
+  analytics:
+    plausible_script: https://stats.acme.example/js/script.js
+    page_url: https://acme.example/waitlist
 plain:
   name: Plain
   site_url: https://plain.example

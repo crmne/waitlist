@@ -21,6 +21,12 @@ footer), and optionally:
   once that email went out (`app/models/approval_webhook.rb`);
 - `approval_email`: a template file, a `Subject:` line then a small Markdown
   body with `{{variables}}`.
+- `analytics`: cookieless counting with Plausible on the public pages
+  (`plausible_script`, `page_url`). Events are reported under
+  `page_url/form`, `/thanks` and `/confirmed`, never the page's own address
+  or referrer, so no token or referral code leaves: a referral visit, a
+  hosted-form signup, a confirmation (and whether a referral brought it),
+  and the referral link copied. Nothing is counted in a frame.
 
 Runtime settings are environment variables: `PUBLIC_HOST`,
 `SECRET_KEY_BASE_FILE`, `ADMIN_PASSWORD_FILE`, `SMTP_ADDRESS`,

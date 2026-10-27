@@ -25,6 +25,13 @@
 #                      id_field, sent_url, labels for the admin
 #   approval_email     optional: template (a Subject: line, then the body with
 #                      {{variables}} from the webhook's answer) and variables
+#   analytics          optional cookieless counting with Plausible on the public
+#                      pages (not when framed): plausible_script (the site's
+#                      script URL) and page_url (events are reported under
+#                      PAGE_URL/form, /thanks, /confirmed, never the page's
+#                      own address, which may carry a token). Events:
+#                      Referral: Visit, Waitlist: Submitted (form: hosted),
+#                      Waitlist: Confirmed, Referral: Link copied
 example:
   name: Example
   site_url: https://example.com

@@ -99,8 +99,10 @@ class SignupsController < PublicController
     response.headers.delete("X-Frame-Options")
     form_targets = ["'self'", origin_of(@product.thanks_url)].compact.join(" ")
     ancestors = ["'self'", *@product.allowed_origins].join(" ")
+    counting = @product.analytics_origin
     response.headers["Content-Security-Policy"] =
-      "default-src 'self'; style-src 'self'; img-src 'self' data:; form-action #{form_targets}; frame-ancestors #{ancestors}"
+      "default-src 'self'; style-src 'self'; img-src 'self' data:; form-action #{form_targets}; frame-ancestors #{ancestors}" +
+      (counting ? "; script-src 'self' #{counting}; connect-src 'self' #{counting}" : "")
   end
 
   def origin_of(url)

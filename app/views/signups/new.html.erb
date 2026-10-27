@@ -1,3 +1,4 @@
+<% count_page "form", (@referral.present? && !@error ? [["Referral: Visit", { landing: "waitlist form" }]] : []) %>
 <% content_for :title, "Join the #{@product.name} waitlist" %>
 <h1>Join the <%= @product.name %> waitlist</h1>
 <p class="lede">Leave your email and we'll write when there is a place for you.</p>
