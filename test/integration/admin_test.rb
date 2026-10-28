@@ -12,6 +12,24 @@ class AdminTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "only requests without the password are rate limited" do
+    Admin::BaseController::RATE_LIMIT_STORE.clear
+    30.times { get "/admin", headers: admin_headers }
+    assert_response :success
+
+    wrong = { "Authorization" => ActionController::HttpAuthentication::Basic.encode_credentials("admin", "wrong") }
+    20.times { get "/admin", headers: wrong }
+    assert_response :unauthorized
+    get "/admin", headers: wrong
+    assert_response :too_many_requests
+    get "/admin"
+    assert_response :too_many_requests
+    get "/admin", headers: admin_headers
+    assert_response :success
+  ensure
+    Admin::BaseController::RATE_LIMIT_STORE.clear
+  end
+
   test "counts, approval, export and delete" do
     first = confirmed_signup("first@example.com", at: 2.days.ago)
     first.update!(answers: { "How many tracks do you have?" => "Over 20000" })
