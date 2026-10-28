@@ -5,3 +5,7 @@ production:
   retention:
     class: RetentionJob
     schedule: every day at 3:20
+  # Counts only, to our Seq (app/models/metrics_report.rb).
+  metrics:
+    class: MetricsJob
+    schedule: every 10 minutes

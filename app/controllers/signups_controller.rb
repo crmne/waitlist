@@ -27,7 +27,7 @@ class SignupsController < PublicController
     email = Signup.normalize_value_for(:email, params[:email])
     signup = @product.signups.find_or_initialize_by(email:)
     if signup.new_record?
-      signup.assign_attributes(answers: @product.clean_answers(params[:answers]), consent_text: Signup::CONSENT_TEXT, source: "form")
+      signup.assign_attributes(answers: @product.clean_answers(params[:answers]), consent_text: Signup::CONSENT_TEXT, source: signup_source)
       return respond_with_error("Please enter a valid email address.") unless signup.valid?
       return respond_with_error("Please check your email address: #{email.split("@").last} doesn't seem to receive email.") unless EmailDomain.deliverable?(email)
       signup.referred_by = Signup.referrer_for(@product, referral_param, email)
@@ -54,6 +54,10 @@ class SignupsController < PublicController
   end
 
   private
+
+  # "site" for the product site's own form, which posts JSON from its page;
+  # "form" for the hosted form here, framed or not.
+  def signup_source = request.format.json? ? "site" : "form"
 
   def referral_param = (params[:ref].presence || params[:ref_id].presence)&.to_s&.first(64)
 

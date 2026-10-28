@@ -33,6 +33,15 @@ Runtime settings are environment variables: `PUBLIC_HOST`,
 `SMTP_USERNAME_FILE`, `SMTP_PASSWORD_FILE` (mail is written to
 `storage/mail` until all three are set), `PRODUCTS_FILE`, `ROOT_REDIRECT`.
 
+Counts to a log server (optional): with `OTEL_EXPORTER_OTLP_ENDPOINT` (an
+OTLP/HTTP base such as `https://logs.example/ingest/otlp`) and
+`SEQ_API_KEY_FILE` (sent as Seq's `X-Seq-ApiKey`), `MetricsJob` sends each
+product's counts every ten minutes as OpenTelemetry gauges
+(`app/models/metrics_report.rb`): people by status, source and referral,
+signups and confirmations today, and invitations by state. Only counts and
+fixed words leave, never an address, answer, code or time.
+`OTEL_RESOURCE_ATTRIBUTES` names the service, environment and host.
+
 ## Endpoints
 
 - `GET /p/PRODUCT` the hosted form (`?embed=1` to frame it, `?ref=CODE` for a

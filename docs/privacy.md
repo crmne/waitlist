@@ -4,7 +4,7 @@
 |---|---|---|
 | Email address | to confirm it and write when there's a place | until the person leaves, is deleted, or (unconfirmed) 7 days; someone imported unconfirmed from GetWaitlist and sent one reminder, 14 days from that reminder |
 | Answers to the optional questions | to choose who gets in first | with the address |
-| Signup, confirmation and approval times; where the signup came from (form or import); the consent line shown | to keep the line in order and show what was agreed | with the address |
+| Signup, confirmation and approval times; where the signup came from (the hosted form, the product site's own form, or an import); the consent line shown | to keep the line in order and show what was agreed | with the address |
 | Personal referral code; who referred them (if anyone); how many people they referred confirmed | to move people up the line for referrals | with the address. Nobody is told who joined through their link; deleting the referrer drops the link between them |
 | Approval reference (after approval, from the product's webhook) | to see who has a key | with the address; approved people are deleted 90 days after approval |
 | Keyed digest of an address that left | so an import never adds them back | until they sign up again |
@@ -15,6 +15,12 @@ address, with a key that changes on every restart, in memory for at most ten
 minutes. The spam checks keep nothing: a honeypot field, a signed start time
 in the hosted form (or the time the product site's page was open), and a DNS
 lookup of the address's domain, cached in memory for at most an hour.
+Counts leave, never people: every ten minutes the waitlist sends each
+product's totals (people by status, by source and by whether a referral
+brought them, signups and confirmations that day, invitations by state) to
+our own log server, Seq on our own hardware (`MetricsJob`). They are
+numbers with fixed labels, never an address, answer, referral code,
+reference or time, so they describe no one.
 Leaving sends one email confirming the deletion; its queued job holds the
 address until it runs, and finished jobs are cleared within the hour. An
 approval email may carry a licence key from the approval webhook; the key is

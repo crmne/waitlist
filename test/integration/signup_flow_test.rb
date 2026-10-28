@@ -18,6 +18,7 @@ class SignupFlowTest < ActionDispatch::IntegrationTest
     assert_equal({ "Where do you play most?" => "At home" }, signup.answers)
     assert_not signup.confirmed?
     assert_equal Signup::CONSENT_TEXT, signup.consent_text
+    assert_equal "form", signup.source
 
     mail = ActionMailer::Base.deliveries.sole
     assert_equal ["dj@example.com"], mail.to
@@ -41,6 +42,12 @@ class SignupFlowTest < ActionDispatch::IntegrationTest
     # The confirmation link stops working once used.
     get URI(confirm).path
     assert_response :not_found
+  end
+
+  test "a signup from the product site's own form is counted as the site's" do
+    post "/p/acme/signups", params: { elapsed_ms: 5000, email: "site@example.com" }, as: :json, headers: { "Origin" => "https://acme.example" }
+    assert_response :accepted
+    assert_equal "site", acme.signups.sole.source
   end
 
   test "signing up again sends no second email inside the resend window and says the same thing" do

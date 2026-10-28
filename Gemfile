@@ -15,3 +15,7 @@ gem "tzinfo-data", platforms: %i[windows jruby]
 group :development, :test do
   gem "debug", platforms: %i[mri windows], require: "debug/prelude"
 end
+# Aggregate counts to our Seq over OTLP (app/models/metrics_report.rb); only
+# where OTEL_EXPORTER_OTLP_ENDPOINT and SEQ_API_KEY_FILE are set.
+gem "opentelemetry-metrics-sdk"
+gem "opentelemetry-exporter-otlp-metrics"

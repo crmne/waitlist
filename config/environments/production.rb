@@ -64,6 +64,9 @@ Rails.application.configure do
   end
 
   config.x.admin_password = secret_file.call("ADMIN_PASSWORD_FILE")
+  # The ingest key for our Seq, where MetricsJob sends counts (with
+  # OTEL_EXPORTER_OTLP_ENDPOINT); without it nothing is sent.
+  config.x.seq_api_key = secret_file.call("SEQ_API_KEY_FILE")
 
   config.i18n.fallbacks = true
   config.active_record.dump_schema_after_migration = false
