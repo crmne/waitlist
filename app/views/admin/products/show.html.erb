@@ -3,7 +3,7 @@
 <% @product.signup_experiment_reports.each do |report| %>
   <section class="experiment-report" aria-label="Signup experiment <%= report[:name] %>">
     <h2>Signup experiment: <%= report[:name] %></h2>
-    <p class="fine">Signups since <%= report[:since].utc.strftime("%d %b %Y, %H:%M UTC") %>, across every status. Unattributed means the variant was not recorded. Deleted or expired entries are excluded.</p>
+    <p class="fine">Signups from <%= report[:since].utc.strftime("%d %b %Y, %H:%M UTC") %><% if report[:ended_at] %> to <%= report[:ended_at].utc.strftime("%d %b %Y, %H:%M UTC") %><% end %>, across every status. Unattributed means the variant was not recorded. Deleted or expired entries are excluded.</p>
     <table>
       <thead><tr><th>Variant</th><th class="n">Signed up</th><th class="n">Confirmed</th><th class="n">Pending</th></tr></thead>
       <tbody>

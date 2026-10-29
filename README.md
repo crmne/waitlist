@@ -16,7 +16,9 @@ footer), and optionally:
 
 - `notify`: who gets an email when someone confirms;
 - `signup_experiments`: fixed experiment names, each with an ISO 8601
-  `started_at` and a list of `variants`. A new signup may submit an
+  `started_at`, an optional exclusive `ended_at`, and a list of `variants`.
+  Set an end when replacing a test so later unattributed signups do not
+  also enter its historical report. A new signup may submit an
   `experiment`/`variant` pair from that allowlist. It is saved with the
   signup, never changed by a repeat submission, included in CSV exports,
   and added to its browser's `Waitlist: Confirmed` event. The admin shows

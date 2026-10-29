@@ -86,4 +86,26 @@ class SignupExperimentTest < ActionDispatch::IntegrationTest
     assert_equal "prep", rows.find { |row| row["email"] == "a@example.com" }["variant"]
     assert_nil rows.find { |row| row["email"] == "unknown@example.com" }["variant"]
   end
+
+  test "closing an experiment excludes later signups but keeps later confirmations in its cohort" do
+    boundary = Time.iso8601("2026-10-29T12:00:00Z")
+    product = acme
+    settings = product.settings.deep_dup
+    settings["signup_experiments"]["headline-v1"]["ended_at"] = boundary.iso8601
+    settings["signup_experiments"]["headline-v2"] = { "started_at" => boundary.iso8601, "variants" => ["original", "prep", "discover"] }
+    product.update!(settings:)
+    product.signups.create!(email: "old@example.com", consent_text: "test", created_at: boundary - 1.second,
+      confirmed_at: boundary + 1.hour, experiment: "headline-v1", variant: "prep")
+    product.signups.create!(email: "unknown-before@example.com", consent_text: "test", created_at: boundary - 1.second)
+    product.signups.create!(email: "unknown-after@example.com", consent_text: "test", created_at: boundary)
+    product.signups.create!(email: "new@example.com", consent_text: "test", created_at: boundary,
+      experiment: "headline-v2", variant: "original")
+    old, current = product.signup_experiment_reports
+    assert_equal boundary, old[:ended_at]
+    assert_equal 1, old[:rows].find { _1[:variant] == "prep" }[:confirmed]
+    assert_equal 1, old[:rows].find { _1[:variant] == "Unattributed" }[:total]
+    assert_nil current[:ended_at]
+    assert_equal 1, current[:rows].find { _1[:variant] == "original" }[:total]
+    assert_equal 1, current[:rows].find { _1[:variant] == "Unattributed" }[:total]
+  end
 end

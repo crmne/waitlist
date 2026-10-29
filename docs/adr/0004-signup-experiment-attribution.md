@@ -23,7 +23,10 @@ remain unattributed. Do not infer historic assignments.
 
 The admin counts retained signup records created since the configured start
 by variant, with signed-up, confirmed and pending totals and an unattributed
-row. Other experiments and products are excluded; list filters do not change
+row. An optional exclusive `ended_at` closes the signup cohort when a test
+is replaced, preventing later unattributed entries from entering the old
+report. Later confirmations still update the original cohort's status.
+Other experiments and products are excluded; list filters do not change
 the summary. CSV exports include the labels. Removing an experiment from
 configuration hides its report, so retain historic definitions when needed.
 

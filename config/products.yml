@@ -19,6 +19,7 @@
 #   signup_experiments optional fixed labels saved on new signups, for example:
 #                        headline-v1:
 #                          started_at: "2026-10-29T00:00:00Z"
+#                          ended_at: "2026-11-13T00:00:00Z" # optional, exclusive
 #                          variants: [prep, discover]
 #                      Both labels are at most 64 characters. Keep historic
 #                      definitions to keep their admin reports available.

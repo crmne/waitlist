@@ -101,10 +101,12 @@ class Product < ApplicationRecord
   def signup_experiment_reports
     signup_experiments.map do |name, definition|
       since = Time.iso8601(definition.fetch("started_at"))
+      ended_at = Time.iso8601(definition["ended_at"]) if definition["ended_at"]
       cohort = signups.where(created_at: since..).where(experiment: [name, nil])
+      cohort = cohort.where("created_at < ?", ended_at) if ended_at
       counts = cohort.group(:variant).pluck(:variant, Arel.sql("COUNT(*)"),
         Arel.sql("SUM(confirmed_at IS NOT NULL)")).to_h { |variant, total, confirmed| [variant, [total, confirmed]] }
-      { name:, since:, rows: [*definition.fetch("variants"), nil].map { |variant|
+      { name:, since:, ended_at:, rows: [*definition.fetch("variants"), nil].map { |variant|
         total, confirmed = counts.fetch(variant, [0, 0])
         { variant: variant || "Unattributed", total:, confirmed:, pending: total - confirmed }
       } }
