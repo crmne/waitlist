@@ -22,6 +22,13 @@ class SignupMailer < ApplicationMailer
     branded_mail to: signup.email, subject: @template.subject
   end
 
+  def approval_follow_up(signup, step = 1)
+    prepare(signup)
+    @template = TemplateText.new(@product.approval_follow_up_template(step),
+      @product.approval_follow_up_variables(step).merge("email" => signup.email, "product" => @product.name))
+    branded_mail to: signup.email, subject: @template.subject, leave: @leave
+  end
+
   # Confirms that someone who left is deleted. Takes the address, not the
   # signup, which is already gone.
   def left(product, email)

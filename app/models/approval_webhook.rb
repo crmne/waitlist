@@ -41,6 +41,13 @@ class ApprovalWebhook
 
   def acknowledges? = @config["sent_url"].present?
 
+  def follow_up?(signup)
+    answer = post(@config.fetch("follow_up_url"), reference: self.class.reference_for(signup))
+    value = answer["send_follow_up"]
+    raise Error, "the approval webhook answered without a boolean send_follow_up" unless value == true || value == false
+    value
+  end
+
   # Stable and never reused: SQLite reuses the ids of deleted rows, so the
   # signup's random referral code names it.
   def self.reference_for(signup) = "waitlist-#{signup.referral_code}"

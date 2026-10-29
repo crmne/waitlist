@@ -4,6 +4,16 @@ class Signup < ApplicationRecord
   CONSENT_TEXT = "I agree to receive one email to confirm my address, and later an email when there is a place for me. " \
     "I can leave the list at any time."
 
+  FOLLOW_UP_COLUMNS = [
+    { checked: :approval_follow_up_checked_at, sent: :approval_follow_up_sent_at, failed: :approval_follow_up_failed_at },
+    { checked: :approval_follow_up_second_checked_at, sent: :approval_follow_up_second_sent_at, failed: :approval_follow_up_second_failed_at }
+  ].freeze
+
+  def self.follow_up_columns(step)
+    raise ArgumentError, "follow-up step must be 1 or 2" unless [1, 2].include?(step)
+    FOLLOW_UP_COLUMNS.fetch(step - 1)
+  end
+
   belongs_to :product
   belongs_to :referred_by, class_name: "Signup", optional: true
   has_many :referrals, class_name: "Signup", foreign_key: :referred_by_id, dependent: :nullify, inverse_of: :referred_by

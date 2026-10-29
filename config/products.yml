@@ -29,9 +29,13 @@
 #                      font_css_url, impressum (the footer's legal line)
 #   on_approve         optional webhook run when someone is approved
 #                      (app/models/approval_webhook.rb): url, token_file,
-#                      id_field, sent_url, labels for the admin
+#                      id_field, sent_url, follow_up_url, labels for the admin
 #   approval_email     optional: template (a Subject: line, then the body with
 #                      {{variables}} from the webhook's answer) and variables
+#   approval_follow_up optional: steps (one or two), each with increasing
+#                      after_hours (integer 1..168), template and variables.
+#                      Needs on_approve.follow_up_url, which accepts
+#                      POST {reference} and returns {send_follow_up: boolean}.
 #   analytics          optional cookieless counting with Plausible on the public
 #                      pages (not when framed): plausible_script (the site's
 #                      script URL) and page_url (events are reported under

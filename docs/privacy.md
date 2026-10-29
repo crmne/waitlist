@@ -8,6 +8,7 @@
 | Signup, confirmation and approval times; where the signup came from (the hosted form, the product site's own form, or an import); the consent line shown | to keep the line in order and show what was agreed | with the address |
 | Personal referral code; who referred them (if anyone); how many people they referred confirmed | to move people up the line for referrals | with the address. Nobody is told who joined through their link; deleting the referrer drops the link between them |
 | Approval reference (after approval, from the product's webhook) | to see who has a key | with the address; approved people are deleted 90 days after approval |
+| Optional follow-up check, send and failure times for each of two steps | to send at most two getting-started follow-ups after an invitation | with the address, under the same retention |
 | Keyed digest of an address that left | so an import never adds them back | until they sign up again |
 
 Not stored anywhere: IP addresses, user agents, the page someone came from,
@@ -28,6 +29,13 @@ approval email may carry a licence key from the approval webhook; the key is
 never stored or queued here. The owner gets an email for each confirmed signup (the address, answers,
 place and referral count), sent through the same SES account. Cloudflare still processes requests and IPs under its own terms,
 and the SMTP provider handles each email it delivers.
+
+An opted-in product can send up to two getting-started follow-ups after its invitation.
+The waitlist asks the product's private service for a yes/no eligibility decision
+using the existing signup reference immediately before sending. It stores no
+activation or usage details and tracks no email opens. Each follow-up has a
+leave link. Existing consent records are never rewritten; new forms disclose
+the follow-ups when the product enables them.
 
 Legal basis: consent (Art. 6(1)(a) GDPR), confirmed by email. Leaving
 withdraws it and deletes the record at once. Controller: PlentyLabs UG

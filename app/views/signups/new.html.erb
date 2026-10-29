@@ -33,5 +33,5 @@
   </div>
 
   <button type="submit">Join the waitlist</button>
-  <p class="fine"><%= Signup::CONSENT_TEXT %> We'll email you a link to confirm. <a href="<%= @product.privacy_url %>" target="_top">How we handle your details</a>.</p>
+  <p class="fine"><%= @product.consent_text %> We'll email you a link to confirm. <a href="<%= @product.privacy_url %>" target="_top">How we handle your details</a>.</p>
 <% end %>

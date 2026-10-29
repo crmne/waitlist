@@ -19,6 +19,7 @@ class Product < ApplicationRecord
   validates :name, :site_url, :privacy_url, :from_address, presence: true
   validates :keep_approved_days, numericality: { only_integer: true, greater_than: 0 }
   validates :places_per_referral, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validate :valid_approval_follow_up
 
   # Creates or updates every product in the products file. Never deletes:
   # a product left out of the file keeps its row and its signups.
@@ -45,6 +46,7 @@ class Product < ApplicationRecord
             "brand" => attributes["brand"] || {},
             "on_approve" => attributes["on_approve"],
             "approval_email" => attributes["approval_email"],
+            "approval_follow_up" => attributes["approval_follow_up"],
             "reminder_days" => attributes.fetch("reminder_days", 14),
             "analytics" => attributes["analytics"],
             "signup_experiments" => attributes["signup_experiments"]
@@ -156,6 +158,39 @@ class Product < ApplicationRecord
   # Extra variables for the approval email, from the products file.
   def approval_email_variables = settings.dig("approval_email", "variables") || {}
 
+  # Opt-in per product, with a fresh decision from its own service.
+  def approval_follow_up = settings["approval_follow_up"].presence
+
+  def consent_text
+    return Signup::CONSENT_TEXT unless approval_follow_up
+    follow_ups = approval_follow_up.fetch("steps").size == 1 ? "one getting-started follow-up" : "up to two getting-started follow-ups"
+    "I agree to receive an email to confirm my address, an invitation when there is a place, " \
+      "and #{follow_ups} if needed. I can leave the list at any time."
+  end
+
+  def approval_follow_up_step(step)
+    return unless [1, 2].include?(step)
+    approval_follow_up&.fetch("steps")&.[](step - 1)
+  end
+
+  def approval_follow_up_template(step) = resolve(approval_follow_up_step(step).fetch("template")).read
+
+  def approval_follow_up_variables(step) = approval_follow_up_step(step).fetch("variables", {})
+
+  def approval_follow_up_due(step = 1)
+    config = approval_follow_up_step(step) or return signups.none
+    hours = config.fetch("after_hours")
+    due = signups.confirmed.approved.where(Signup.follow_up_columns(step).fetch(:checked) => nil)
+      .where("approval_emailed_at <= ?", hours.hours.ago)
+    # Preserve the interval even when an older invitation's first reminder
+    # goes out late. A suppressed or uncertain first send ends the sequence.
+    if step == 2
+      gap = hours - approval_follow_up_step(1).fetch("after_hours")
+      due = due.where("approval_follow_up_sent_at <= ?", gap.hours.ago)
+    end
+    due
+  end
+
   # What the admin calls the approval step's states.
   def approval_label(state)
     defaults = { "sent" => "Approval email sent", "failed" => "Approved, email failed",
@@ -166,5 +201,20 @@ class Product < ApplicationRecord
   def resolve(path)
     full = Pathname(path).absolute? ? Pathname(path) : Pathname(settings.fetch("root", Rails.root.to_s)).join(path)
     full.expand_path
+  end
+
+  private
+
+  def valid_approval_follow_up
+    config = approval_follow_up or return
+    steps = config["steps"] if config.is_a?(Hash)
+    valid = steps.is_a?(Array) && (1..2).cover?(steps.size) && on_approve&.dig("follow_up_url").present?
+    valid &&= steps.all? { |step| step.is_a?(Hash) && step["after_hours"].is_a?(Integer) &&
+      (1..168).cover?(step["after_hours"]) && step["template"].is_a?(String) &&
+      step["template"].present? && step.fetch("variables", {}).is_a?(Hash) }
+    valid &&= steps.each_cons(2).all? { |first, second| first["after_hours"] < second["after_hours"] }
+    unless valid
+      errors.add(:settings, "approval_follow_up needs one or two ordered steps with after_hours (1..168), template, variables and on_approve.follow_up_url")
+    end
   end
 end

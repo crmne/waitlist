@@ -33,6 +33,11 @@ footer), and optionally:
   once that email went out (`app/models/approval_webhook.rb`);
 - `approval_email`: a template file, a `Subject:` line then a small Markdown
   body with `{{variables}}`.
+- `approval_follow_up`: one or two ordered `steps`, each with `after_hours`
+  (1..168), `template` and optional `variables`. Requires
+  `on_approve.follow_up_url`. Each step checks eligibility before sending;
+  a late first email preserves the configured gap before the second.
+  See [the follow-up contract](docs/adr/0005-two-spaced-approval-follow-ups.md).
 - `analytics`: cookieless counting with Plausible on the public pages
   (`plausible_script`, `page_url`). Events are reported under
   `page_url/form`, `/thanks` and `/confirmed`, never the page's own address

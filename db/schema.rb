@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_29_170000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_30_000000) do
   create_table "products", force: :cascade do |t|
     t.string "slug", null: false
     t.string "name", null: false
@@ -53,8 +53,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_170000) do
     t.datetime "approval_failed_at"
     t.datetime "reminder_sent_at"
     t.datetime "confirm_by"
+    t.datetime "approval_follow_up_checked_at"
+    t.datetime "approval_follow_up_sent_at"
+    t.datetime "approval_follow_up_failed_at"
     t.string "experiment"
     t.string "variant"
+    t.datetime "approval_follow_up_second_checked_at"
+    t.datetime "approval_follow_up_second_sent_at"
+    t.datetime "approval_follow_up_second_failed_at"
     t.index ["product_id", "confirmed_at", "approved_at", "created_at"], name: "idx_on_product_id_confirmed_at_approved_at_created__e186c70b46"
     t.index ["product_id", "email"], name: "index_signups_on_product_id_and_email", unique: true
     t.index ["product_id", "experiment", "variant"], name: "index_signups_on_product_id_and_experiment_and_variant"
