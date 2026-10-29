@@ -25,10 +25,10 @@ class Admin::ProductsController < Admin::BaseController
     product = Product.find_by!(slug: params[:slug])
     csv = CSV.generate do |rows|
       places = product.line.each_with_index.to_h { |signup, index| [signup.id, index + 1] }
-      rows << ["email", "status", "place in line", "referrals", "signed up", "confirmed", "approved", "approval", "source", *product.question_titles]
+      rows << ["email", "status", "place in line", "referrals", "signed up", "confirmed", "approved", "approval", "source", "experiment", "variant", *product.question_titles]
       product.signups.in_line.each do |signup|
         rows << [signup.email, signup.status, places[signup.id], signup.effective_referrals, signup.created_at&.iso8601, signup.confirmed_at&.iso8601,
-          signup.approved_at&.iso8601, signup.approval_state, signup.source,
+          signup.approved_at&.iso8601, signup.approval_state, signup.source, signup.experiment, signup.variant,
           *product.question_titles.map { |q| signup.answers[q] }].map { |cell| spreadsheet_safe(cell) }
       end
     end

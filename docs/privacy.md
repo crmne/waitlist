@@ -4,6 +4,7 @@
 |---|---|---|
 | Email address | to confirm it and write when there's a place | until the person leaves, is deleted, or (unconfirmed) 7 days; someone imported unconfirmed from GetWaitlist and sent one reminder, 14 days from that reminder |
 | Answers to the optional questions | to choose who gets in first | with the address |
+| Fixed experiment and variant labels, when configured and submitted with a new signup | to compare which version leads to signups and confirmations, even if browser analytics is unavailable | with the address; repeats never change the original assignment |
 | Signup, confirmation and approval times; where the signup came from (the hosted form, the product site's own form, or an import); the consent line shown | to keep the line in order and show what was agreed | with the address |
 | Personal referral code; who referred them (if anyone); how many people they referred confirmed | to move people up the line for referrals | with the address. Nobody is told who joined through their link; deleting the referrer drops the link between them |
 | Approval reference (after approval, from the product's webhook) | to see who has a key | with the address; approved people are deleted 90 days after approval |
@@ -31,6 +32,11 @@ and the SMTP provider handles each email it delivers.
 Legal basis: consent (Art. 6(1)(a) GDPR), confirmed by email. Leaving
 withdraws it and deletes the record at once. Controller: PlentyLabs UG
 (haftungsbeschränkt) & Co. KG.
+
+A configured experiment's fixed labels also accompany its browser's
+`Waitlist: Confirmed` event. No email, token or referral code is sent to
+analytics. No browser event is sent by the server. Existing entries without
+labels remain unattributed; no browsing history is reconstructed.
 
 A product's privacy notice should say the same in its own words: what is
 kept and why, the confirmation and 7-day deletion, the leave link, referrals

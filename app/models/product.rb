@@ -46,7 +46,8 @@ class Product < ApplicationRecord
             "on_approve" => attributes["on_approve"],
             "approval_email" => attributes["approval_email"],
             "reminder_days" => attributes.fetch("reminder_days", 14),
-            "analytics" => attributes["analytics"]
+            "analytics" => attributes["analytics"],
+            "signup_experiments" => attributes["signup_experiments"]
           }.compact
         )
       end
@@ -83,6 +84,32 @@ class Product < ApplicationRecord
   end
 
   def brand = DEFAULT_BRAND.merge(settings.fetch("brand", {}).compact)
+
+  def signup_experiments = settings.fetch("signup_experiments", {})
+
+  # Store only a configured pair of fixed labels, never arbitrary query text.
+  def clean_experiment(experiment, variant)
+    return {} unless experiment.is_a?(String) && variant.is_a?(String)
+    definition = signup_experiments[experiment]
+    return {} unless definition && Array(definition["variants"]).include?(variant)
+    return {} if experiment.length > 64 || variant.length > 64
+    { experiment:, variant: }
+  end
+
+  # Counts actual records, independent of analytics delivery and the admin's
+  # people-list filter. Earlier, missing and preview assignments stay unknown.
+  def signup_experiment_reports
+    signup_experiments.map do |name, definition|
+      since = Time.iso8601(definition.fetch("started_at"))
+      cohort = signups.where(created_at: since..).where(experiment: [name, nil])
+      counts = cohort.group(:variant).pluck(:variant, Arel.sql("COUNT(*)"),
+        Arel.sql("SUM(confirmed_at IS NOT NULL)")).to_h { |variant, total, confirmed| [variant, [total, confirmed]] }
+      { name:, since:, rows: [*definition.fetch("variants"), nil].map { |variant|
+        total, confirmed = counts.fetch(variant, [0, 0])
+        { variant: variant || "Unattributed", total:, confirmed:, pending: total - confirmed }
+      } }
+    end
+  end
 
   # Optional cookieless counting with Plausible: the product's script and the
   # address its events are reported under (page_url), so the page's own

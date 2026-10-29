@@ -1,5 +1,19 @@
 <% content_for :title, "#{@product.name} waitlist" %>
 <h1><%= @product.name %></h1>
+<% @product.signup_experiment_reports.each do |report| %>
+  <section class="experiment-report" aria-label="Signup experiment <%= report[:name] %>">
+    <h2>Signup experiment: <%= report[:name] %></h2>
+    <p class="fine">Signups since <%= report[:since].utc.strftime("%d %b %Y, %H:%M UTC") %>, across every status. Unattributed means the variant was not recorded. Deleted or expired entries are excluded.</p>
+    <table>
+      <thead><tr><th>Variant</th><th class="n">Signed up</th><th class="n">Confirmed</th><th class="n">Pending</th></tr></thead>
+      <tbody>
+        <% report[:rows].each do |row| %>
+          <tr><td><%= row[:variant] %></td><td class="n"><%= row[:total] %></td><td class="n"><%= row[:confirmed] %></td><td class="n"><%= row[:pending] %></td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+<% end %>
 <nav class="tabs">
   <% Admin::ProductsController::STATUSES.each do |status| %>
     <a href="<%= admin_product_path(@product, status:) %>" class="<%= "current" if status == @status %>"><%= status.capitalize %></a>

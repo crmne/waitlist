@@ -15,6 +15,16 @@ sites, sender, optional questions, brand (logo, colours, fonts, legal
 footer), and optionally:
 
 - `notify`: who gets an email when someone confirms;
+- `signup_experiments`: fixed experiment names, each with an ISO 8601
+  `started_at` and a list of `variants`. A new signup may submit an
+  `experiment`/`variant` pair from that allowlist. It is saved with the
+  signup, never changed by a repeat submission, included in CSV exports,
+  and added to its browser's `Waitlist: Confirmed` event. The admin shows
+  signed-up, confirmed and pending counts since the experiment started,
+  plus unattributed entries. These are retained records across all statuses,
+  independent of browser analytics and the people-list filters. Deletion and
+  retention remove them from the report too. Update the product's privacy
+  notice before enabling this;
 - `on_approve`: a webhook called when you approve someone, with a Bearer
   token from a file. Its JSON answer must name an id (`id_field`); its other
   fields fill the approval email and are never stored. `sent_url` is told
@@ -47,7 +57,8 @@ fixed words leave, never an address, answer, code or time.
 - `GET /p/PRODUCT` the hosted form (`?embed=1` to frame it, `?ref=CODE` for a
   referral); `POST /p/PRODUCT/signups` takes it, or JSON with `email`,
   `elapsed_ms` (how long your page was open), an empty `website`, and
-  optional `answers` and `ref`. Without JavaScript, link to the hosted form.
+  optional `answers`, `ref`, `experiment` and `variant`. Unknown or malformed
+  experiment pairs are ignored. Without JavaScript, link to the hosted form.
 - `/confirm/TOKEN`, `/leave/TOKEN` from the emails.
 - `/admin` (HTTP Basic, user `admin`).
 - `/brands/PRODUCT/FILE` the brand folder's png, css, woff2 and txt files.
@@ -72,4 +83,5 @@ ADMIN_PASSWORD=dev bin/rails server   # mail goes to tmp/mails
 A deployment keeps its products file, brand folders and Kamal config in its
 own repository and layers them onto this image (`COPY` into `/rails/deploy`,
 `PRODUCTS_FILE=/rails/deploy/products.yml`). Why it exists: [ADR 0001](docs/adr/0001-self-hosted-waitlist.md),
-[ADR 0002](docs/adr/0002-generic-products-branded-emails.md).
+[ADR 0002](docs/adr/0002-generic-products-branded-emails.md),
+[ADR 0004](docs/adr/0004-signup-experiment-attribution.md).

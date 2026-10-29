@@ -1,4 +1,4 @@
-<% count_page "confirmed", [["Waitlist: Confirmed", { referral: @signup.referred_by_id ? "yes" : "no" }]] %>
+<% count_page "confirmed", [["Waitlist: Confirmed", { referral: @signup.referred_by_id ? "yes" : "no" }.merge(@signup.experiment_properties)]] %>
 <% content_for :title, "You're on the list" %>
 <h1>You're on the list</h1>
 <% if (place = @signup.place_in_line) %>

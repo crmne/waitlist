@@ -15,6 +15,11 @@ class Signup < ApplicationRecord
   validates :email, presence: true, length: { maximum: 254 },
     format: { with: /\A[^@\s]+@[^@\s]+\.[^@\s]+\z/ }, uniqueness: { scope: :product_id }
   validates :source, :consent_text, presence: true
+  validates :experiment, :variant, length: { maximum: 64 }, allow_nil: true
+
+  def experiment_properties
+    experiment.present? && variant.present? ? { experiment:, variant: } : {}
+  end
 
   scope :unconfirmed, -> { where(confirmed_at: nil) }
   scope :confirmed, -> { where.not(confirmed_at: nil) }

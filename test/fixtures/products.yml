@@ -53,6 +53,10 @@ acme:
   analytics:
     plausible_script: https://stats.acme.example/js/script.js
     page_url: https://acme.example/waitlist
+  signup_experiments:
+    headline-v1:
+      started_at: "2026-10-29T00:00:00Z"
+      variants: [prep, discover]
 plain:
   name: Plain
   site_url: https://plain.example

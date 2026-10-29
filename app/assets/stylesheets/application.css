@@ -52,5 +52,15 @@ button.danger { background: var(--danger); color: #fff; }
 .tabs a { color: var(--muted); text-decoration: none; }
 .tabs a.current { color: var(--ink); font-weight: 600; }
 .search input { max-width: 20rem; }
+.experiment-report { margin: 1.5rem 0; }
+.experiment-report h2 { font-size: 1rem; margin: 0; overflow-wrap: anywhere; }
+.experiment-report .fine { margin-top: .35rem; }
+.experiment-report table { table-layout: fixed; }
+.experiment-report th:first-child { width: 40%; }
+.experiment-report td:first-child { overflow-wrap: anywhere; }
+@media (max-width: 40rem) {
+  .experiment-report th:last-child, .experiment-report td:last-child { display: none; }
+  .experiment-report th, .experiment-report td { padding: .5rem .25rem; }
+}
 .tag { font-size: .75rem; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: .1rem .5rem; }
 @media (max-width: 40rem) { .card { margin: 1rem; padding: 1.5rem 1rem; } footer { padding: 0 1rem; } }

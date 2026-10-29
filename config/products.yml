@@ -16,6 +16,12 @@
 #   places_per_referral  places a confirmed referral moves someone up (5)
 #   reminder_days      days an imported unconfirmed person has to confirm (14)
 #   questions          optional multiple-choice questions; every answer optional
+#   signup_experiments optional fixed labels saved on new signups, for example:
+#                        headline-v1:
+#                          started_at: "2026-10-29T00:00:00Z"
+#                          variants: [prep, discover]
+#                      Both labels are at most 64 characters. Keep historic
+#                      definitions to keep their admin reports available.
 #   brand              dir (a folder whose png, css, woff2 and txt files are
 #                      served at /brands/PRODUCT/FILE), logo (a PNG in it), logo_width, colours (background, card, text,
 #                      muted, accent, accent_text, line), font, heading_font,
