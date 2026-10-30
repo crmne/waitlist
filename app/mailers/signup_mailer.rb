@@ -2,8 +2,18 @@ class SignupMailer < ApplicationMailer
   # Double opt-in, after someone signs up through a form.
   def confirmation(signup)
     prepare(signup)
-    @validity_days = Rails.configuration.x.unconfirmed_retention.in_days.to_i
+    @confirm_by = signup.confirmation_deadline
+    @confirmation_reminders = signup.confirmation_reminders_enabled?
     branded_mail to: signup.email, subject: "Confirm your place on the #{@product.name} waitlist", leave: @leave
+  end
+
+  def confirmation_reminder(signup, step = 1)
+    Signup.confirmation_reminder_columns(step)
+    prepare(signup)
+    @confirm_by = signup.confirmation_deadline
+    @final_reminder = step == 2
+    subject = @final_reminder ? "Still want to join the #{@product.name} waitlist?" : "One last step to join #{@product.name}"
+    branded_mail to: signup.email, subject:, leave: @leave
   end
 
   # The one email to someone imported unconfirmed: they asked to join on the

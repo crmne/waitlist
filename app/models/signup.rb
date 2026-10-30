@@ -9,6 +9,17 @@ class Signup < ApplicationRecord
     { checked: :approval_follow_up_second_checked_at, sent: :approval_follow_up_second_sent_at, failed: :approval_follow_up_second_failed_at }
   ].freeze
 
+  CONFIRMATION_REMINDER_DELAYS = [1.day, 7.days].freeze
+  CONFIRMATION_REMINDER_COLUMNS = [
+    { checked: :confirmation_reminder_checked_at, sent: :confirmation_reminder_sent_at, failed: :confirmation_reminder_failed_at },
+    { checked: :confirmation_reminder_second_checked_at, sent: :confirmation_reminder_second_sent_at, failed: :confirmation_reminder_second_failed_at }
+  ].freeze
+
+  def self.confirmation_reminder_columns(step)
+    raise ArgumentError, "reminder step must be 1 or 2" unless [1, 2].include?(step)
+    CONFIRMATION_REMINDER_COLUMNS.fetch(step - 1)
+  end
+
   def self.follow_up_columns(step)
     raise ArgumentError, "follow-up step must be 1 or 2" unless [1, 2].include?(step)
     FOLLOW_UP_COLUMNS.fetch(step - 1)
@@ -19,6 +30,7 @@ class Signup < ApplicationRecord
   has_many :referrals, class_name: "Signup", foreign_key: :referred_by_id, dependent: :nullify, inverse_of: :referred_by
 
   before_create :assign_referral_code
+  before_create :set_confirmation_deadline
 
   normalizes :email, with: ->(email) { email.to_s.strip.downcase }
 
@@ -56,6 +68,12 @@ class Signup < ApplicationRecord
   end
 
   def confirmed? = confirmed_at.present?
+
+  def confirmation_deadline = confirm_by || (created_at || Time.current) + product.unconfirmed_retention
+
+  def confirmation_reminders_enabled?
+    product.confirmation_reminders? && %w[site form].include?(source) && reminder_sent_at.nil?
+  end
 
   # 1 for the first person waiting (Product#line).
   def place_in_line
@@ -132,6 +150,10 @@ class Signup < ApplicationRecord
   end
 
   private
+
+  def set_confirmation_deadline
+    self.confirm_by ||= confirmation_deadline if !confirmed? && confirmation_reminders_enabled?
+  end
 
   def assign_referral_code
     self.referral_code ||= loop do

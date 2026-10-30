@@ -1,4 +1,7 @@
 production:
+  confirmation_reminders:
+    class: ConfirmationRemindersJob
+    schedule: every hour at minute 10
   approval_follow_ups:
     class: ApprovalFollowUpsJob
     schedule: every hour at minute 5

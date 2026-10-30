@@ -1,0 +1,9 @@
+<%= @final_reminder ? "Still want to join?" : "One last step" %>
+
+You asked to join the <%= @product.name %> waitlist, but your email address still needs confirming. Click below to finish joining:
+
+<%= @confirm_url %>
+
+<% if @final_reminder %>This is the last confirmation reminder. <% end %>Please confirm by <%= @confirm_by.strftime("%-d %B %Y") %>. After that, your unconfirmed details will be deleted.
+
+Didn't ask to join, or changed your mind? Use the leave link below to stop the reminders and delete your details.

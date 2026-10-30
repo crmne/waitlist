@@ -1,0 +1,5 @@
+<%= render "shared/email_heading", text: @final_reminder ? "Still want to join?" : "One last step" %>
+<p style="margin:0 0 20px;">You asked to join the <%= @product.name %> waitlist, but your email address still needs confirming. Click below to finish joining.</p>
+<%= render "shared/email_button", url: @confirm_url, label: "Confirm my place" %>
+<p style="margin:0 0 20px;font-size:15px;color:<%= brand["muted"] %>;"><% if @final_reminder %>This is the last confirmation reminder. <% end %>Please confirm by <%= @confirm_by.strftime("%-d %B %Y") %>. After that, your unconfirmed details will be deleted.</p>
+<p style="margin:0;font-size:15px;color:<%= brand["muted"] %>;">Didn't ask to join, or changed your mind? Use the leave link below to stop the reminders and delete your details.</p>

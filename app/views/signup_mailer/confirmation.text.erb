@@ -4,7 +4,7 @@ Someone, hopefully you, asked to join the <%= @product.name %> waitlist with thi
 
 <%= @confirm_url %>
 
-The link works for <%= @validity_days %> days. If you don't confirm, your address is deleted and you won't hear from us again. If this wasn't you, ignore this email.
+Please confirm by <%= @confirm_by.strftime("%-d %B %Y") %>. <% if @confirmation_reminders %>If needed, we'll remind you after one day and one week. <% end %>If you don't confirm, your address is deleted after the confirmation window closes. If this wasn't you, use the leave link below to stop further emails and delete your details.
 <% if @referral_url && @product.places_per_referral.positive? %>
 Once you've confirmed, share your own link. For everyone who joins through it and confirms their email, you move up <%= @product.places_per_referral %> places. We never tell you who they are:
 <%= @referral_url %>

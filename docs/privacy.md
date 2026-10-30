@@ -2,13 +2,14 @@
 
 | Data | Why | Kept |
 |---|---|---|
-| Email address | to confirm it and write when there's a place | until the person leaves, is deleted, or (unconfirmed) 7 days; someone imported unconfirmed from GetWaitlist and sent one reminder, 14 days from that reminder |
+| Email address | to confirm it and write when there's a place | until the person leaves, is deleted, or the confirmation deadline passes: normally 14 days with confirmation reminders (extended for late reminders), otherwise 7 days; imported unconfirmed contacts keep their existing 14-day deadline |
 | Answers to the optional questions | to choose who gets in first | with the address |
 | Fixed experiment and variant labels, when configured and submitted with a new signup | to compare which version leads to signups and confirmations, even if browser analytics is unavailable | with the address; repeats never change the original assignment |
 | Signup, confirmation and approval times; where the signup came from (the hosted form, the product site's own form, or an import); the consent line shown | to keep the line in order and show what was agreed | with the address |
 | Personal referral code; who referred them (if anyone); how many people they referred confirmed | to move people up the line for referrals | with the address. Nobody is told who joined through their link; deleting the referrer drops the link between them |
 | Approval reference (after approval, from the product's webhook) | to see who has a key | with the address; approved people are deleted 90 days after approval |
 | Optional follow-up check, send and failure times for each of two steps | to send at most two getting-started follow-ups after an invitation | with the address, under the same retention |
+| Optional confirmation reminder check, send and failure times for each of two steps | to send at most two reminders before confirmation | with the address, under the same retention |
 | Keyed digest of an address that left | so an import never adds them back | until they sign up again |
 
 Not stored anywhere: IP addresses, user agents, the page someone came from,
@@ -30,6 +31,13 @@ never stored or queued here. The owner gets an email for each confirmed signup (
 place and referral count), sent through the same SES account. Cloudflare still processes requests and IPs under its own terms,
 and the SMTP provider handles each email it delivers.
 
+An opted-in product sends confirmation reminders after one day and one week
+from signup, at least six days apart, only while the address is unconfirmed.
+These stop on confirmation, leaving or expiry. Imports that received the
+one-off migration reminder are excluded. The confirmation window is normally
+14 days; late reminders extend it to leave seven days after the final reminder.
+Each email states its deadline. Retention runs daily after that deadline.
+
 An opted-in product can send up to two getting-started follow-ups after its invitation.
 The waitlist asks the product's private service for a yes/no eligibility decision
 using the existing signup reference immediately before sending. It stores no
@@ -47,5 +55,5 @@ analytics. No browser event is sent by the server. Existing entries without
 labels remain unattributed; no browsing history is reconstructed.
 
 A product's privacy notice should say the same in its own words: what is
-kept and why, the confirmation and 7-day deletion, the leave link, referrals
+kept and why, its confirmation reminders and deletion window, the leave link, referrals
 (counted, never shown), that no IP is stored, and who delivers the email.

@@ -20,6 +20,7 @@ class Product < ApplicationRecord
   validates :keep_approved_days, numericality: { only_integer: true, greater_than: 0 }
   validates :places_per_referral, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validate :valid_approval_follow_up
+  validate :valid_confirmation_reminders
 
   # Creates or updates every product in the products file. Never deletes:
   # a product left out of the file keeps its row and its signups.
@@ -47,6 +48,7 @@ class Product < ApplicationRecord
             "on_approve" => attributes["on_approve"],
             "approval_email" => attributes["approval_email"],
             "approval_follow_up" => attributes["approval_follow_up"],
+            "confirmation_reminders" => attributes["confirmation_reminders"],
             "reminder_days" => attributes.fetch("reminder_days", 14),
             "analytics" => attributes["analytics"],
             "signup_experiments" => attributes["signup_experiments"]
@@ -162,10 +164,36 @@ class Product < ApplicationRecord
   def approval_follow_up = settings["approval_follow_up"].presence
 
   def consent_text
+    if confirmation_reminders?
+      text = "I agree to receive an email to confirm my address, up to two confirmation reminders after one day and one week, " \
+        "and an invitation when there is a place."
+      if approval_follow_up
+        count = approval_follow_up.fetch("steps").size == 1 ? "one getting-started follow-up" : "up to two getting-started follow-ups"
+        text += " I may also receive #{count} if needed after my invitation."
+      end
+      return text + " I can leave the list at any time."
+    end
     return Signup::CONSENT_TEXT unless approval_follow_up
     follow_ups = approval_follow_up.fetch("steps").size == 1 ? "one getting-started follow-up" : "up to two getting-started follow-ups"
     "I agree to receive an email to confirm my address, an invitation when there is a place, " \
       "and #{follow_ups} if needed. I can leave the list at any time."
+  end
+
+  def confirmation_reminders? = settings["confirmation_reminders"] == true
+
+  def unconfirmed_retention = confirmation_reminders? ? 14.days : Rails.configuration.x.unconfirmed_retention
+
+  def confirmation_reminder_due(step = 1, now: Time.current)
+    columns = Signup.confirmation_reminder_columns(step)
+    return signups.none unless confirmation_reminders?
+
+    due = signups.unconfirmed.where(source: %w[site form], approved_at: nil, reminder_sent_at: nil, columns.fetch(:checked) => nil)
+      .where("created_at <= ?", now - Signup::CONFIRMATION_REMINDER_DELAYS.fetch(step - 1))
+      .where("confirmation_sent_at <= ?", now - 1.day)
+      .where("confirm_by > :now OR (confirm_by IS NULL AND created_at > :cutoff)", now:, cutoff: now - unconfirmed_retention)
+    # A late first reminder never causes both steps to arrive together.
+    due = due.where("confirmation_reminder_sent_at <= ?", now - 6.days) if step == 2
+    due
   end
 
   def approval_follow_up_step(step)
@@ -204,6 +232,11 @@ class Product < ApplicationRecord
   end
 
   private
+
+  def valid_confirmation_reminders
+    value = settings["confirmation_reminders"]
+    errors.add(:settings, "confirmation_reminders must be true or false") unless [nil, true, false].include?(value)
+  end
 
   def valid_approval_follow_up
     config = approval_follow_up or return

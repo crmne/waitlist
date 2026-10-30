@@ -15,4 +15,4 @@
     <% end %>
   </tbody>
 </table>
-<p class="fine">Unconfirmed signups are deleted after <%= Rails.configuration.x.unconfirmed_retention.in_days.to_i %> days; approved ones after each product's keep period.</p>
+<p class="fine">Unconfirmed signups are deleted after their confirmation deadline. Products with confirmation reminders allow 14 days, extended for late reminders; other products allow <%= Rails.configuration.x.unconfirmed_retention.in_days.to_i %> days. Approved signups use each product's keep period.</p>

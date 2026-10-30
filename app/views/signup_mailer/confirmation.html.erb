@@ -1,5 +1,5 @@
 <%= render "shared/email_heading", text: "Confirm your place" %>
 <p style="margin:0 0 20px;">Someone, hopefully you, asked to join the <%= @product.name %> waitlist with this address. Confirm it to take your place in line.</p>
 <%= render "shared/email_button", url: @confirm_url, label: "Confirm my place" %>
-<p style="margin:0 0 20px;font-size:15px;color:<%= brand["muted"] %>;">The link works for <%= @validity_days %> days. If you don't confirm, your address is deleted and you won't hear from us again. If this wasn't you, ignore this email.</p>
+<p style="margin:0 0 20px;font-size:15px;color:<%= brand["muted"] %>;">Please confirm by <%= @confirm_by.strftime("%-d %B %Y") %>. <% if @confirmation_reminders %>If needed, we'll remind you after one day and one week. <% end %>If you don't confirm, your address is deleted after the confirmation window closes. If this wasn't you, use the leave link below to stop further emails and delete your details.</p>
 <%= render "shared/email_referral", intro: "Once you've confirmed, share your own link." %>

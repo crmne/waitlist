@@ -1,5 +1,5 @@
 <% count_page "thanks", [["Waitlist: Submitted", { form: "hosted" }]] %>
 <% content_for :title, "Check your email" %>
 <h1>Check your email</h1>
-<p class="lede">We've sent you a link to confirm your place on the <%= @product.name %> waitlist. It works for <%= Rails.configuration.x.unconfirmed_retention.in_days.to_i %> days.</p>
+<p class="lede">We've sent you a link to confirm your place on the <%= @product.name %> waitlist.</p>
 <p class="fine">Nothing there? Look in your spam folder. If you've already confirmed, you're on the list and there's nothing more to do.</p>

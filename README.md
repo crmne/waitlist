@@ -33,6 +33,11 @@ footer), and optionally:
   once that email went out (`app/models/approval_webhook.rb`);
 - `approval_email`: a template file, a `Subject:` line then a small Markdown
   body with `{{variables}}`.
+- `confirmation_reminders: true`: two confirmation reminders after one day
+  and one week, cancelled on confirmation or leaving. The second is at least
+  six days after the first. The confirmation window is normally 14 days,
+  extended for late reminders; imported contacts retain their one-off email.
+  See [the confirmation reminder contract](docs/adr/0006-two-confirmation-reminders.md).
 - `approval_follow_up`: one or two ordered `steps`, each with `after_hours`
   (1..168), `template` and optional `variables`. Requires
   `on_approve.follow_up_url`. Each step checks eligibility before sending;
