@@ -10,11 +10,13 @@
 # counting; who referred whom is rebuilt between imported people; and any
 # GetWaitlist referral credit not covered by an imported person (someone who
 # never confirmed there) is kept as imported_referrals, so nobody loses
-# places. Names, phone numbers and metadata are never read.
+# places. Names, phone numbers and metadata are never read. A row may say
+# "existing_user": true when the address already has a login in the product,
+# so a later email can leave them out or word it for them.
 class GetwaitlistImport
   SOURCE = "getwaitlist"
   CONSENT_TEXT = "Signed up through the GetWaitlist form and confirmed the address there; imported without a new email."
-  UNCONFIRMED_CONSENT_TEXT = "Signed up through the GetWaitlist form but never confirmed there; imported and sent one email asking to confirm."
+  UNCONFIRMED_CONSENT_TEXT = "Signed up through the GetWaitlist form but never confirmed there; imported without a new email."
 
   CODE = /\A[A-Za-z0-9_-]{4,64}\z/
 
@@ -22,6 +24,7 @@ class GetwaitlistImport
     def counts
       to_h.transform_values(&:size).merge(
         import_unconfirmed: import.count { |row| !row["verified"] },
+        import_existing_users: import.count { |row| row["existing_user"] == true },
         imported_with_referral_credit: import.count { |row| row["amount_referred"].to_i.positive? },
         referral_credit: import.sum { |row| row["amount_referred"].to_i }
       )
@@ -29,7 +32,8 @@ class GetwaitlistImport
   end
 
   # unconfirmed: also import the signups GetWaitlist reports as unverified,
-  # as unconfirmed here (GetwaitlistImport#remind sends each one email).
+  # as unconfirmed here, until reminder_days from now. Importing sends
+  # nothing; GetwaitlistImport.remind is a separate, deliberate step.
   def initialize(product:, rows:, unconfirmed: false)
     @product = product
     @rows = rows
@@ -79,6 +83,7 @@ class GetwaitlistImport
         signup = @product.signups.create!(
           email: row["email"], answers: @product.clean_answers(answers_of(row)),
           source: SOURCE, consent_text: verified ? CONSENT_TEXT : UNCONFIRMED_CONSENT_TEXT,
+          existing_user: row["existing_user"] == true,
           created_at: signed_up, confirmed_at: (now if verified), referral_code: code,
           confirm_by: (now + @product.reminder_days.days unless verified)
         )

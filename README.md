@@ -81,8 +81,10 @@ clear error and an in-memory rate limit. Each confirmed referral moves the
 referrer up `places_per_referral` places.
 
 `bin/getwaitlist-pull` and `bin/rails "getwaitlist:import[PRODUCT]"` move a
-list from GetWaitlist; `getwaitlist:remind` sends imported unconfirmed people
-one reminder.
+list from GetWaitlist, sending nothing; `getwaitlist:remind` sends imported
+unconfirmed people one reminder. Add `"existing_user": true` to a row before
+importing to mark an address that already has a login in the product; the
+CSV export shows it.
 
 ## Develop
 

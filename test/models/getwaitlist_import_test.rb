@@ -22,7 +22,7 @@ class GetwaitlistImportTest < ActiveSupport::TestCase
 
   test "a dry run writes nothing and counts every reason" do
     counts = GetwaitlistImport.new(product: acme, rows:).plan.counts
-    assert_equal({ import: 1, unverified: 1, removed: 1, spam: 1, existing: 1, suppressed: 1, invalid: 2, import_unconfirmed: 0,
+    assert_equal({ import: 1, unverified: 1, removed: 1, spam: 1, existing: 1, suppressed: 1, invalid: 2, import_unconfirmed: 0, import_existing_users: 0,
       imported_with_referral_credit: 1, referral_credit: 3 }, counts)
     assert_equal 1, Signup.count
   end
@@ -41,6 +41,36 @@ class GetwaitlistImportTest < ActiveSupport::TestCase
 
     # Running it again adds nobody.
     assert_equal 0, GetwaitlistImport.new(product: acme, rows:).apply!.import.size
+  end
+
+  test "an unconfirmed import stays unconfirmed, keeps its deadline past retention, can be marked a user, and emails nobody" do
+    rows = [
+      { "email" => "user@example.com", "created_at" => "2024-07-19_10-00-00", "verified" => false, "existing_user" => true },
+      { "email" => "confirmed-user@example.com", "created_at" => "2024-07-19_11-00-00", "verified" => true, "existing_user" => true },
+      { "email" => "plain@example.com", "created_at" => "2024-07-19_12-00-00", "verified" => false }
+    ]
+    acme.update!(settings: acme.settings.merge("reminder_days" => 180, "confirmation_reminders" => true))
+    assert_equal 2, GetwaitlistImport.new(product: acme, rows:, unconfirmed: true).plan.counts[:import_existing_users]
+    assert_no_enqueued_jobs do
+      GetwaitlistImport.new(product: acme, rows:, unconfirmed: true).apply!
+      ConfirmationRemindersJob.perform_now
+    end
+
+    user = acme.signups.find_by!(email: "user@example.com")
+    assert_not user.confirmed?
+    assert user.existing_user
+    assert_includes user.consent_text, "without a new email"
+    assert acme.signups.find_by!(email: "confirmed-user@example.com").existing_user
+    assert_not acme.signups.find_by!(email: "plain@example.com").existing_user
+
+    travel 179.days do
+      RetentionJob.perform_now
+      assert_equal 3, acme.signups.where(source: "getwaitlist").count
+    end
+    travel 181.days do
+      RetentionJob.perform_now
+      assert_equal 1, acme.signups.where(source: "getwaitlist").count
+    end
   end
 
   test "referral codes, who referred whom and leftover credit come across, so old links keep counting" do

@@ -2,10 +2,11 @@
 
 | Data | Why | Kept |
 |---|---|---|
-| Email address | to confirm it and write when there's a place | until the person leaves, is deleted, or the confirmation deadline passes: normally 14 days with confirmation reminders (extended for late reminders), otherwise 7 days; imported unconfirmed contacts keep their existing 14-day deadline |
+| Email address | to confirm it and write when there's a place | until the person leaves, is deleted, or the confirmation deadline passes: normally 14 days with confirmation reminders (extended for late reminders), otherwise 7 days; imported unconfirmed contacts are kept until their product's `reminder_days` after the import or their reminder |
 | Answers to the optional questions | to choose who gets in first | with the address |
 | Fixed experiment and variant labels, when configured and submitted with a new signup | to compare which version leads to signups and confirmations, even if browser analytics is unavailable | with the address; repeats never change the original assignment |
 | Signup, confirmation and approval times; where the signup came from (the hosted form, the product site's own form, or an import); the consent line shown | to keep the line in order and show what was agreed | with the address |
+| Whether an imported address already has a login in the product (true or false) | to leave them out of an email to the list, or word it for them | with the address |
 | Personal referral code; who referred them (if anyone); how many people they referred confirmed | to move people up the line for referrals | with the address. Nobody is told who joined through their link; deleting the referrer drops the link between them |
 | Approval reference (after approval, from the product's webhook) | to see who has a key | with the address; approved people are deleted 90 days after approval |
 | Optional follow-up check, send and failure times for each of two steps | to send at most two getting-started follow-ups after an invitation | with the address, under the same retention |
