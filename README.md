@@ -55,6 +55,14 @@ Runtime settings are environment variables: `PUBLIC_HOST`,
 `SMTP_USERNAME_FILE`, `SMTP_PASSWORD_FILE` (mail is written to
 `storage/mail` until all three are set), `PRODUCTS_FILE`, `ROOT_REDIRECT`.
 
+SES feedback (optional): `SES_EVENTS_TOPIC_ARN` is the one SNS topic whose
+signed messages `/hooks/ses_events` accepts (404 without it); the app confirms
+that topic's subscription itself. `SES_CONFIGURATION_SET` makes every
+email name that configuration set and carry a `product` tag, so its events
+say which product sent it. Set it only after the configuration set exists:
+SES refuses mail that names an unknown one, and the sending user's policy
+must allow the configuration set too.
+
 Counts to a log server (optional): with `OTEL_EXPORTER_OTLP_ENDPOINT` (an
 OTLP/HTTP base such as `https://logs.example/ingest/otlp`) and
 `SEQ_API_KEY_FILE` (sent as Seq's `X-Seq-ApiKey`), `MetricsJob` sends each
@@ -76,6 +84,10 @@ fixed words leave, never an address, answer, code or time.
   (`List-Unsubscribe-Post`): a mail provider's POST leaves at once, with no
   session, CSRF token or "you've left" email. Only leaving with the page's
   button sends that email.
+- `POST /hooks/ses_events` for Amazon SNS: SES bounces and complaints
+  ([ADR 0007](docs/adr/0007-ses-feedback-and-one-click-unsubscribe.md)).
+  A complaint or a permanent bounce deletes the signup and keeps the
+  suppression digest, sending nothing; transient bounces are only logged.
 - `/admin` (HTTP Basic, user `admin`).
 - `/brands/PRODUCT/FILE` the brand folder's png, css, woff2 and txt files.
 
@@ -102,4 +114,5 @@ A deployment keeps its products file, brand folders and Kamal config in its
 own repository and layers them onto this image (`COPY` into `/rails/deploy`,
 `PRODUCTS_FILE=/rails/deploy/products.yml`). Why it exists: [ADR 0001](docs/adr/0001-self-hosted-waitlist.md),
 [ADR 0002](docs/adr/0002-generic-products-branded-emails.md),
-[ADR 0004](docs/adr/0004-signup-experiment-attribution.md).
+[ADR 0004](docs/adr/0004-signup-experiment-attribution.md),
+[ADR 0007](docs/adr/0007-ses-feedback-and-one-click-unsubscribe.md).

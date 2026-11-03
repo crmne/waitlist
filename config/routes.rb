@@ -16,6 +16,9 @@ Rails.application.routes.draw do
   # POST ("List-Unsubscribe=One-Click") leaves without a "you've left" email.
   post "leave/:token", to: "leaves#create"
 
+  # Amazon SNS: SES bounces and complaints (Hooks::SesEventsController).
+  post "hooks/ses_events", to: "hooks/ses_events#create", as: :ses_events_hook
+
   namespace :admin do
     root "products#index"
     resources :products, only: %i[index show], param: :slug do

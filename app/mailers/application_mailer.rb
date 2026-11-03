@@ -18,6 +18,13 @@ class ApplicationMailer < ActionMailer::Base
       headers["List-Unsubscribe"] = "<#{leave}>"
       headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
     end
+    # SES publishes this message's bounce or complaint to the configuration
+    # set's topic, tagged with the product (SesEvent). SES removes both
+    # headers before delivery.
+    if (configuration_set = Rails.configuration.x.ses_configuration_set)
+      headers["X-SES-CONFIGURATION-SET"] = configuration_set
+      headers["X-SES-MESSAGE-TAGS"] = "product=#{@product.slug}"
+    end
     mail(to:, from: @product.from_address, reply_to: @product.reply_to, subject:, "Auto-Submitted" => "auto-generated", **headers)
   end
 end

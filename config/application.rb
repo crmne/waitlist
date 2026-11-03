@@ -32,6 +32,14 @@ module Waitlist
     # A second confirmation email for the same address waits at least this long.
     config.x.confirmation_resend_after = 15.minutes
 
+    # SES feedback (SesEvent): the SNS topic whose signed messages
+    # POST /hooks/ses_events accepts; without it that route answers 404. And the
+    # configuration set every email names, with a `product` tag, so SES
+    # publishes its bounces and complaints there. Set the configuration set
+    # only once it exists in SES, which refuses mail naming an unknown one.
+    config.x.ses_events_topic_arn = ENV["SES_EVENTS_TOPIC_ARN"].presence
+    config.x.ses_configuration_set = ENV["SES_CONFIGURATION_SET"].presence
+
     # No cookies on public pages: sessions exist only for the admin's forms.
     config.session_store :cookie_store, key: "_waitlist_admin", same_site: :strict, secure: Rails.env.production?
   end

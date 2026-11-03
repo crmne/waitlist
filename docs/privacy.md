@@ -11,7 +11,7 @@
 | Approval reference (after approval, from the product's webhook) | to see who has a key | with the address; approved people are deleted 90 days after approval |
 | Optional follow-up check, send and failure times for each of two steps | to send at most two getting-started follow-ups after an invitation | with the address, under the same retention |
 | Optional confirmation reminder check, send and failure times for each of two steps | to send at most two reminders before confirmation | with the address, under the same retention |
-| Keyed digest of an address that left | so an import never adds them back | until they sign up again |
+| Keyed digest of an address that left, complained or hard-bounced | so an import never adds them back | until they sign up again |
 
 Not stored anywhere: IP addresses, user agents, the page someone came from,
 cookies on public pages, request logs. The rate limiter keeps an HMAC of the
@@ -28,7 +28,10 @@ reference or time, so they describe no one.
 Leaving with the leave page's button sends one email confirming the
 deletion; its queued job holds the address until it runs, and finished jobs
 are cleared within the hour. Leaving through a mail provider's one-click
-unsubscribe sends nothing. An
+unsubscribe sends nothing. When SES reports a complaint or a permanent bounce
+for an address, the waitlist deletes its signup for that product (or every
+product holding it, when the email names none) and keeps only the digest,
+without emailing them; the report itself is not stored. An
 approval email may carry a licence key from the approval webhook; the key is
 never stored or queued here. The owner gets an email for each confirmed signup (the address, answers,
 place and referral count), sent through the same SES account. Cloudflare still processes requests and IPs under its own terms,
