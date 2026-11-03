@@ -12,6 +12,8 @@ Rails.application.routes.draw do
   get "confirm/:token", to: "confirmations#show", as: :confirmation
   post "confirm/:token", to: "confirmations#create"
   get "leave/:token", to: "leaves#show", as: :leave
+  # Also the List-Unsubscribe address: a mail provider's RFC 8058 one-click
+  # POST ("List-Unsubscribe=One-Click") leaves without a "you've left" email.
   post "leave/:token", to: "leaves#create"
 
   namespace :admin do

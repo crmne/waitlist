@@ -12,7 +12,12 @@ class ApplicationMailer < ActionMailer::Base
   def branded_mail(to:, subject:, leave: nil, **headers)
     @leave_url = leave
     @logo_url = brand_file_url(@product.slug, @product.brand["logo"]) if @product.logo_path
-    headers["List-Unsubscribe"] = "<#{leave}>" if leave
+    # RFC 8058 one-click: the provider POSTs "List-Unsubscribe=One-Click"
+    # to the leave link (LeavesController#create).
+    if leave
+      headers["List-Unsubscribe"] = "<#{leave}>"
+      headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
+    end
     mail(to:, from: @product.from_address, reply_to: @product.reply_to, subject:, "Auto-Submitted" => "auto-generated", **headers)
   end
 end

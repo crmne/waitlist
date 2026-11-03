@@ -71,7 +71,11 @@ fixed words leave, never an address, answer, code or time.
   `elapsed_ms` (how long your page was open), an empty `website`, and
   optional `answers`, `ref`, `experiment` and `variant`. Unknown or malformed
   experiment pairs are ignored. Without JavaScript, link to the hosted form.
-- `/confirm/TOKEN`, `/leave/TOKEN` from the emails.
+- `/confirm/TOKEN`, `/leave/TOKEN` from the emails. `/leave/TOKEN` is also
+  every email's `List-Unsubscribe` address, with RFC 8058 one-click
+  (`List-Unsubscribe-Post`): a mail provider's POST leaves at once, with no
+  session, CSRF token or "you've left" email. Only leaving with the page's
+  button sends that email.
 - `/admin` (HTTP Basic, user `admin`).
 - `/brands/PRODUCT/FILE` the brand folder's png, css, woff2 and txt files.
 

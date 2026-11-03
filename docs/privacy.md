@@ -25,8 +25,10 @@ brought them, signups and confirmations that day, invitations by state) to
 our own log server, Seq on our own hardware (`MetricsJob`). They are
 numbers with fixed labels, never an address, answer, referral code,
 reference or time, so they describe no one.
-Leaving sends one email confirming the deletion; its queued job holds the
-address until it runs, and finished jobs are cleared within the hour. An
+Leaving with the leave page's button sends one email confirming the
+deletion; its queued job holds the address until it runs, and finished jobs
+are cleared within the hour. Leaving through a mail provider's one-click
+unsubscribe sends nothing. An
 approval email may carry a licence key from the approval webhook; the key is
 never stored or queued here. The owner gets an email for each confirmed signup (the address, answers,
 place and referral count), sent through the same SES account. Cloudflare still processes requests and IPs under its own terms,
