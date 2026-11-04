@@ -26,6 +26,11 @@
 #                          variants: [prep, discover]
 #                      Both labels are at most 64 characters. Keep historic
 #                      definitions to keep their admin reports available.
+#   signup_campaigns   optional fixed utm_campaign names, each listing its
+#                      utm_content labels (at most 64 characters), for example:
+#                        launch:
+#                          contents: [reel-a, reel-b]
+#                      A new signup arriving with a listed pair saves both.
 #   brand              dir (a folder whose png, css, woff2 and txt files are
 #                      served at /brands/PRODUCT/FILE), logo (a PNG in it), logo_width, colours (background, card, text,
 #                      muted, accent, accent_text, line), font, heading_font,

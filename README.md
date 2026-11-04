@@ -27,6 +27,13 @@ footer), and optionally:
   independent of browser analytics and the people-list filters. Deletion and
   retention remove them from the report too. Update the product's privacy
   notice before enabling this;
+- `signup_campaigns`: fixed campaign names, each with a list of `contents`
+  (at most 64 characters each), for example `launch: { contents: [reel-a] }`.
+  A new signup that arrives with a listed `utm_campaign`/`utm_content` pair
+  (in the hosted form's address, or in the JSON a product site posts) saves
+  both labels, never changed by a repeat submission and included in CSV
+  exports. Unknown, incomplete or malformed labels are dropped. Update the
+  product's privacy notice before enabling this;
 - `on_approve`: a webhook called when you approve someone, with a Bearer
   token from a file. Its JSON answer must name an id (`id_field`); its other
   fields fill the approval email and are never stored. `sent_url` is told
@@ -77,8 +84,9 @@ fixed words leave, never an address, answer, code or time.
 - `GET /p/PRODUCT` the hosted form (`?embed=1` to frame it, `?ref=CODE` for a
   referral); `POST /p/PRODUCT/signups` takes it, or JSON with `email`,
   `elapsed_ms` (how long your page was open), an empty `website`, and
-  optional `answers`, `ref`, `experiment` and `variant`. Unknown or malformed
-  experiment pairs are ignored. Without JavaScript, link to the hosted form.
+  optional `answers`, `ref`, `experiment`, `variant`, `utm_campaign` and
+  `utm_content`. Unknown or malformed experiment and campaign pairs are
+  ignored. Without JavaScript, link to the hosted form.
 - `/confirm/TOKEN`, `/leave/TOKEN` from the emails. `/leave/TOKEN` is also
   every email's `List-Unsubscribe` address, with RFC 8058 one-click
   (`List-Unsubscribe-Post`): a mail provider's POST leaves at once, with no

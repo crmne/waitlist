@@ -28,7 +28,8 @@ class SignupsController < PublicController
     signup = @product.signups.find_or_initialize_by(email:)
     if signup.new_record?
       signup.assign_attributes(answers: @product.clean_answers(params[:answers]), consent_text: @product.consent_text, source: signup_source,
-        **@product.clean_experiment(params[:experiment], params[:variant]))
+        **@product.clean_experiment(params[:experiment], params[:variant]),
+        **@product.clean_campaign(params[:utm_campaign], params[:utm_content]))
       return respond_with_error("Please enter a valid email address.") unless signup.valid?
       return respond_with_error("Please check your email address: #{email.split("@").last} doesn't seem to receive email.") unless EmailDomain.deliverable?(email)
       signup.referred_by = Signup.referrer_for(@product, referral_param, email)

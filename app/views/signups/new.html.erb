@@ -7,6 +7,11 @@
   <% if @embedded %><input type="hidden" name="embed" value="1"><% end %>
   <input type="hidden" name="started" value="<%= SpamCheck.started_token %>">
   <% if @referral %><input type="hidden" name="ref" value="<%= @referral %>"><% end %>
+  <% campaign = @product.clean_campaign(params[:utm_campaign], params[:utm_content]) %>
+  <% if campaign.any? %>
+    <input type="hidden" name="utm_campaign" value="<%= campaign[:campaign] %>">
+    <input type="hidden" name="utm_content" value="<%= campaign[:campaign_content] %>">
+  <% end %>
   <% if @error %><p class="error" role="alert"><%= @error %></p><% end %>
 
   <label for="email">Email</label>

@@ -51,7 +51,8 @@ class Product < ApplicationRecord
             "confirmation_reminders" => attributes["confirmation_reminders"],
             "reminder_days" => attributes.fetch("reminder_days", 14),
             "analytics" => attributes["analytics"],
-            "signup_experiments" => attributes["signup_experiments"]
+            "signup_experiments" => attributes["signup_experiments"],
+            "signup_campaigns" => attributes["signup_campaigns"]
           }.compact
         )
       end
@@ -98,6 +99,17 @@ class Product < ApplicationRecord
     return {} unless definition && Array(definition["variants"]).include?(variant)
     return {} if experiment.length > 64 || variant.length > 64
     { experiment:, variant: }
+  end
+
+  def signup_campaigns = settings.fetch("signup_campaigns", {})
+
+  # Like experiments: only a configured campaign and one of its listed contents, never arbitrary query text.
+  def clean_campaign(campaign, content)
+    return {} unless campaign.is_a?(String) && content.is_a?(String)
+    definition = signup_campaigns[campaign]
+    return {} unless definition && Array(definition["contents"]).include?(content)
+    return {} if campaign.length > 64 || content.length > 64
+    { campaign:, campaign_content: content }
   end
 
   # Counts actual records, independent of analytics delivery and the admin's

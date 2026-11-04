@@ -57,6 +57,9 @@ acme:
     headline-v1:
       started_at: "2026-10-29T00:00:00Z"
       variants: [prep, discover]
+  signup_campaigns:
+    autumn:
+      contents: [reel-a, reel-b]
 plain:
   name: Plain
   site_url: https://plain.example

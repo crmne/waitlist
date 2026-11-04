@@ -42,6 +42,34 @@ class SignupExperimentTest < ActionDispatch::IntegrationTest
     assert_empty Product.find_by!(slug: "plain").signups.sole.experiment_properties
   end
 
+  test "a listed campaign and content are saved once and anything else is dropped" do
+    join(utm_campaign: "autumn", utm_content: "reel-a")
+    signup = acme.signups.sole
+    assert_equal ["autumn", "reel-a"], [signup.campaign, signup.campaign_content]
+    join(utm_campaign: "autumn", utm_content: "reel-b")
+    assert_equal "reel-a", signup.reload.campaign_content
+    [{ utm_campaign: "autumn", utm_content: "dj@example.com" }, { utm_campaign: "other", utm_content: "reel-a" },
+     { utm_campaign: "autumn" }, { utm_campaign: ["autumn"], utm_content: "reel-a" }].each_with_index do |labels, index|
+      join("c#{index}@example.com", **labels)
+      assert_equal [nil, nil], acme.signups.order(:id).last.then { [it.campaign, it.campaign_content] }
+    end
+
+    get "/admin/products/acme/export", headers: admin_headers
+    header, *rows = CSV.parse(response.body)
+    columns = [header.index("campaign"), header.index("campaign content")]
+    assert_equal ["autumn", "reel-a"], rows.find { it.first == "dj@example.com" }.values_at(*columns)
+    assert_equal [nil, nil], rows.find { it.first == "c0@example.com" }.values_at(*columns)
+  end
+
+  test "the hosted form carries a listed campaign from its address, and nothing else" do
+    get "/p/acme?utm_campaign=autumn&utm_content=reel-b"
+    assert_select "input[type=hidden][name=utm_campaign][value=autumn]"
+    assert_select "input[type=hidden][name=utm_content][value=reel-b]"
+    get "/p/acme?utm_campaign=autumn&utm_content=%3Cb%3Ex"
+    assert_select "input[name=utm_campaign]", 0
+    assert_select "input[name=utm_content]", 0
+  end
+
   test "quietly refused spam cannot become an attributed signup" do
     assert_no_difference "Signup.count" do
       join(experiment: "headline-v1", variant: "prep", website: "spam")
