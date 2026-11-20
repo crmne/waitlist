@@ -1,4 +1,4 @@
-FROM ruby:4.0.9-slim AS build
+FROM ruby:4.0.10-slim AS build
 WORKDIR /rails
 RUN apt-get update -qq && apt-get install --no-install-recommends -y build-essential git libyaml-dev libssl-dev pkg-config && rm -rf /var/lib/apt/lists/*
 ENV BUNDLE_DEPLOYMENT=1 BUNDLE_PATH=/usr/local/bundle BUNDLE_WITHOUT=development:test
@@ -8,7 +8,7 @@ COPY . .
 RUN bundle exec bootsnap precompile --gemfile app/ lib/ && \
     RAILS_ENV=production SECRET_KEY_BASE_DUMMY=1 bin/rails assets:precompile
 
-FROM ruby:4.0.9-slim
+FROM ruby:4.0.10-slim
 WORKDIR /rails
 RUN apt-get update -qq && apt-get install --no-install-recommends -y libsqlite3-0 && rm -rf /var/lib/apt/lists/*
 ENV RAILS_ENV=production BUNDLE_DEPLOYMENT=1 BUNDLE_PATH=/usr/local/bundle BUNDLE_WITHOUT=development:test \
