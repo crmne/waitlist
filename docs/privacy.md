@@ -3,7 +3,8 @@
 | Data | Why | Kept |
 |---|---|---|
 | Email address | to confirm it and write when there's a place | until the person leaves, is deleted, or the confirmation deadline passes: normally 14 days with confirmation reminders (extended for late reminders), otherwise 7 days; imported unconfirmed contacts are kept until their product's `reminder_days` after the import or their reminder |
-| Answers to the optional questions | to choose who gets in first | with the address |
+| Answers to the optional questions, including any short text answer (one line, cut to the question's length) | to choose who gets in first, and to learn how people find the product | with the address |
+| The fixed class of page someone came from (such as `chatgpt`, `search` or `direct`), when the product lists the classes and its site sends one with a new signup | to learn how people find the product | with the address; repeats never change it. The address of that page is never sent or stored |
 | Fixed experiment and variant labels, when configured and submitted with a new signup | to compare which version leads to signups and confirmations, even if browser analytics is unavailable | with the address; repeats never change the original assignment |
 | Fixed campaign and content labels from the link someone arrived by, when the product lists them and they come with a new signup | to compare which ad or post leads to signups and confirmations | with the address; repeats never change the original labels |
 | Signup, confirmation and approval times; where the signup came from (the hosted form, the product site's own form, or an import); the consent line shown | to keep the line in order and show what was agreed | with the address |
@@ -14,7 +15,7 @@
 | Optional confirmation reminder check, send and failure times for each of two steps | to send at most two reminders before confirmation | with the address, under the same retention |
 | Keyed digest of an address that left, complained or hard-bounced | so an import never adds them back | until they sign up again |
 
-Not stored anywhere: IP addresses, user agents, the page someone came from,
+Not stored anywhere: IP addresses, user agents, the address of the page someone came from,
 cookies on public pages, request logs. The rate limiter keeps an HMAC of the
 address, with a key that changes on every restart, in memory for at most ten
 minutes. The spam checks keep nothing: a honeypot field, a signed start time

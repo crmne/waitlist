@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_03_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_26_120000) do
   create_table "products", force: :cascade do |t|
     t.string "slug", null: false
     t.string "name", null: false
@@ -70,6 +70,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_120000) do
     t.boolean "existing_user", default: false, null: false
     t.string "campaign"
     t.string "campaign_content"
+    t.string "referrer"
     t.index ["product_id", "confirmed_at", "approved_at", "created_at"], name: "idx_on_product_id_confirmed_at_approved_at_created__e186c70b46"
     t.index ["product_id", "email"], name: "index_signups_on_product_id_and_email", unique: true
     t.index ["product_id", "experiment", "variant"], name: "index_signups_on_product_id_and_experiment_and_variant"

@@ -50,6 +50,17 @@ acme:
         - Under 1000
         - 1000 to 5000
         - Over 20000
+    - question: How did you find us?
+      options:
+        - An AI assistant
+        - Search
+        - A friend
+    - question: What did you ask it?
+      type: text
+      max_length: 40
+      only_if:
+        question: How did you find us?
+        answer: An AI assistant
   analytics:
     plausible_script: https://stats.acme.example/js/script.js
     page_url: https://acme.example/waitlist
@@ -60,6 +71,7 @@ acme:
   signup_campaigns:
     autumn:
       contents: [reel-a, reel-b]
+  signup_referrers: [chatgpt, claude, search, direct]
 plain:
   name: Plain
   site_url: https://plain.example

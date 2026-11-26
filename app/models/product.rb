@@ -20,6 +20,7 @@ class Product < ApplicationRecord
   validates :keep_approved_days, numericality: { only_integer: true, greater_than: 0 }
   validates :places_per_referral, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validate :valid_approval_follow_up
+  validate :valid_questions
   validate :valid_confirmation_reminders
 
   # Creates or updates every product in the products file. Never deletes:
@@ -41,7 +42,7 @@ class Product < ApplicationRecord
           thanks_url: attributes["thanks_url"],
           keep_approved_days: attributes.fetch("keep_approved_days", 90),
           places_per_referral: attributes.fetch("places_per_referral", 5),
-          questions: Array(attributes["questions"]).map { |q| { "question" => q.fetch("question"), "options" => Array(q.fetch("options")) } },
+          questions: Array(attributes["questions"]).map { |q| question_config(q) },
           settings: {
             "root" => path.dirname.to_s,
             "brand" => attributes["brand"] || {},
@@ -52,12 +53,26 @@ class Product < ApplicationRecord
             "reminder_days" => attributes.fetch("reminder_days", 14),
             "analytics" => attributes["analytics"],
             "signup_experiments" => attributes["signup_experiments"],
-            "signup_campaigns" => attributes["signup_campaigns"]
+            "signup_campaigns" => attributes["signup_campaigns"],
+            "signup_referrers" => attributes["signup_referrers"]
           }.compact
         )
       end
     end
   end
+
+  # A multiple-choice question (the default) has options. A text question
+  # (type: text) takes a short free answer, at most max_length characters
+  # (TEXT_ANSWER_LENGTH). Either may ask only after an earlier choice
+  # question got one answer (only_if: {question:, answer:}).
+  def self.question_config(q)
+    type = q.fetch("type", "choice")
+    { "question" => q.fetch("question"), "type" => type,
+      "options" => type == "text" ? nil : Array(q.fetch("options")),
+      "max_length" => q["max_length"], "only_if" => q["only_if"] }.compact
+  end
+
+  TEXT_ANSWER_LENGTH = 200
 
   def to_param = slug
 
@@ -75,17 +90,48 @@ class Product < ApplicationRecord
 
   def question_titles = questions.map { |q| q["question"] }
 
-  # Keeps only answers to this product's questions that are one of its
-  # options, comparing without surrounding spaces. Everything else is dropped.
+  def text_question?(q) = q["type"] == "text"
+
+  def choice_questions = questions.reject { |q| text_question?(q) }
+
+  # Keeps only answers to this product's questions: for a choice question one
+  # of its options, comparing without surrounding spaces; for a text question
+  # the text on one line, cut to its length. A question asked only after
+  # another's answer keeps its answer only when that answer was given.
+  # Everything else is dropped.
   def clean_answers(raw)
     raw = raw.to_unsafe_h if raw.respond_to?(:to_unsafe_h)
     return {} unless raw.is_a?(Hash)
 
     questions.each_with_object({}) do |q, answers|
-      value = raw[q["question"]].to_s.strip
-      option = q["options"].find { |o| o.strip == value }
-      answers[q["question"]] = option if option
+      condition = q["only_if"]
+      next if condition && answers[condition["question"]] != condition["answer"]
+
+      if text_question?(q)
+        text = clean_text(raw[q["question"]], q.fetch("max_length", TEXT_ANSWER_LENGTH))
+        answers[q["question"]] = text if text
+      else
+        value = raw[q["question"]].to_s.strip
+        option = q["options"].find { |o| o.strip == value }
+        answers[q["question"]] = option if option
+      end
     end
+  end
+
+  # How many retained signups gave each answer to each choice question, and
+  # (with signup_referrers) which kind of page they came from, across every
+  # status. Waitlists are small, so this is counted in Ruby.
+  def answer_reports
+    rows = signups.pluck(:answers, :referrer)
+    reports = choice_questions.map do |q|
+      counts = rows.map { |answers, _| answers[q["question"]] }.tally
+      { title: q["question"], rows: [*q["options"].map { |o| [o, counts.fetch(o, 0)] }, ["No answer", counts.fetch(nil, 0)]] }
+    end
+    if signup_referrers.any?
+      counts = rows.map(&:last).tally
+      reports << { title: "Came from", rows: [*signup_referrers.map { |r| [r, counts.fetch(r, 0)] }, ["Not recorded", counts.fetch(nil, 0)]] }
+    end
+    reports
   end
 
   def brand = DEFAULT_BRAND.merge(settings.fetch("brand", {}).compact)
@@ -110,6 +156,14 @@ class Product < ApplicationRecord
     return {} unless definition && Array(definition["contents"]).include?(content)
     return {} if campaign.length > 64 || content.length > 64
     { campaign:, campaign_content: content }
+  end
+
+  # Fixed classes of the page someone came from (chatgpt, search, reddit),
+  # which a product site may work out itself and send. Never an address.
+  def signup_referrers = Array(settings["signup_referrers"]).map(&:to_s)
+
+  def clean_referrer(referrer)
+    referrer.is_a?(String) && referrer.length <= 64 && signup_referrers.include?(referrer) ? { referrer: } : {}
   end
 
   # Counts actual records, independent of analytics delivery and the admin's
@@ -244,6 +298,33 @@ class Product < ApplicationRecord
   end
 
   private
+
+  # One line of plain text, without control characters, at most max
+  # characters; nil when nothing is left.
+  def clean_text(value, max)
+    return unless value.is_a?(String)
+    value.scrub("").gsub(/[[:cntrl:]\u200B-\u200F\u202A-\u202E\u2066-\u2069]/, " ").squish.first(max).presence
+  end
+
+  def valid_questions
+    questions.each_with_index do |q, index|
+      name = q["question"]
+      case q.fetch("type", "choice")
+      when "choice"
+        errors.add(:questions, "#{name} needs options") if q["options"].blank?
+      when "text"
+        max = q.fetch("max_length", TEXT_ANSWER_LENGTH)
+        errors.add(:questions, "#{name} needs a max_length from 1 to 1000") unless max.is_a?(Integer) && (1..1000).cover?(max)
+      else
+        errors.add(:questions, "#{name} has an unknown type #{q["type"].inspect}")
+      end
+      next unless (condition = q["only_if"])
+      earlier = questions.first(index).find { |e| e["question"] == condition.try(:[], "question") && !text_question?(e) }
+      unless condition.is_a?(Hash) && earlier && earlier["options"].include?(condition["answer"])
+        errors.add(:questions, "#{name}: only_if must name an earlier choice question and one of its options")
+      end
+    end
+  end
 
   def valid_confirmation_reminders
     value = settings["confirmation_reminders"]

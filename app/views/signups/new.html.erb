@@ -21,13 +21,17 @@
     <fieldset class="questions">
       <legend>A few questions, all optional</legend>
       <% @product.questions.each_with_index do |q, i| %>
-        <label for="q<%= i %>"><%= q["question"] %></label>
-        <select id="q<%= i %>" name="answers[<%= q["question"] %>]">
-          <option value="">Choose one</option>
-          <% q["options"].each do |option| %>
-            <option value="<%= option %>" <%= "selected" if params.dig(:answers, q["question"]) == option %>><%= option %></option>
-          <% end %>
-        </select>
+        <label for="q<%= i %>"><%= q["question"] %><% if (condition = q["only_if"]) %> <span class="hint">(if you chose “<%= condition["answer"] %>”)</span><% end %></label>
+        <% if @product.text_question?(q) %>
+          <input id="q<%= i %>" name="answers[<%= q["question"] %>]" type="text" autocomplete="off" maxlength="<%= q.fetch("max_length", Product::TEXT_ANSWER_LENGTH) %>" value="<%= params.dig(:answers, q["question"]) if params.dig(:answers, q["question"]).is_a?(String) %>">
+        <% else %>
+          <select id="q<%= i %>" name="answers[<%= q["question"] %>]">
+            <option value="">Choose one</option>
+            <% q["options"].each do |option| %>
+              <option value="<%= option %>" <%= "selected" if params.dig(:answers, q["question"]) == option %>><%= option %></option>
+            <% end %>
+          </select>
+        <% end %>
       <% end %>
     </fieldset>
   <% end %>

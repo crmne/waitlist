@@ -34,6 +34,20 @@ footer), and optionally:
   both labels, never changed by a repeat submission and included in CSV
   exports. Unknown, incomplete or malformed labels are dropped. Update the
   product's privacy notice before enabling this;
+- `signup_referrers`: fixed classes of the page someone came from (for
+  example `[chatgpt, claude, search, reddit, direct, other]`), which a
+  product site works out in the browser and posts as `referrer`. A new
+  signup saves a listed class, never changed by a repeat submission, shown
+  in the admin and CSV exports; anything else is dropped. The waitlist never
+  sees or stores the address itself. Update the product's privacy notice
+  before enabling this;
+- `questions`: optional, every answer optional. A question is multiple
+  choice (`options`) or, with `type: text`, a short free answer kept on one
+  line and cut to `max_length` characters (200). `only_if: {question:,
+  answer:}` keeps an answer only when an earlier choice question got that
+  answer, for example "What did you ask it?" after "An AI assistant". The
+  admin counts each choice question's answers (and the referrer classes)
+  above the list;
 - `on_approve`: a webhook called when you approve someone, with a Bearer
   token from a file. Its JSON answer must name an id (`id_field`); its other
   fields fill the approval email and are never stored. `sent_url` is told
@@ -84,8 +98,8 @@ fixed words leave, never an address, answer, code or time.
 - `GET /p/PRODUCT` the hosted form (`?embed=1` to frame it, `?ref=CODE` for a
   referral); `POST /p/PRODUCT/signups` takes it, or JSON with `email`,
   `elapsed_ms` (how long your page was open), an empty `website`, and
-  optional `answers`, `ref`, `experiment`, `variant`, `utm_campaign` and
-  `utm_content`. Unknown or malformed experiment and campaign pairs are
+  optional `answers`, `ref`, `experiment`, `variant`, `utm_campaign`,
+  `utm_content` and `referrer`. Unknown or malformed experiment and campaign pairs are
   ignored. Without JavaScript, link to the hosted form.
 - `/confirm/TOKEN`, `/leave/TOKEN` from the emails. `/leave/TOKEN` is also
   every email's `List-Unsubscribe` address, with RFC 8058 one-click
