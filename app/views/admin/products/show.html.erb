@@ -14,6 +14,20 @@
     </table>
   </section>
 <% end %>
+<% if (reports = @product.answer_reports).any? %>
+  <section class="answer-report" aria-label="Answers">
+    <h2>Answers</h2>
+    <p class="fine">Everyone kept on the list, across every status. Deleted or expired entries are excluded. Text answers are in the table below and the CSV.</p>
+    <% reports.each do |report| %>
+      <table>
+        <thead><tr><th><%= report[:title] %></th><th class="n">People</th></tr></thead>
+        <tbody>
+          <% report[:rows].each do |label, count| %><tr><td><%= label %></td><td class="n"><%= count %></td></tr><% end %>
+        </tbody>
+      </table>
+    <% end %>
+  </section>
+<% end %>
 <nav class="tabs">
   <% Admin::ProductsController::STATUSES.each do |status| %>
     <a href="<%= admin_product_path(@product, status:) %>" class="<%= "current" if status == @status %>"><%= status.capitalize %></a>
@@ -26,7 +40,7 @@
 </form>
 <table>
   <thead>
-    <tr><th class="n">#</th><th>Email</th><th>Signed up</th><th class="n">Referrals</th><% @product.question_titles.each do |q| %><th><%= q %></th><% end %><th></th></tr>
+    <tr><th class="n">#</th><th>Email</th><th>Signed up</th><th class="n">Referrals</th><% @product.question_titles.each do |q| %><th><%= q %></th><% end %><% if @product.signup_referrers.any? %><th>Came from</th><% end %><th></th></tr>
   </thead>
   <tbody>
     <% @signups.each_with_index do |signup, i| %>
@@ -36,6 +50,7 @@
         <td class="date"><%= signup.created_at.to_date.iso8601 %></td>
         <td class="n"><%= signup.effective_referrals %></td>
         <% @product.question_titles.each do |q| %><td><%= signup.answers[q] %></td><% end %>
+        <% if @product.signup_referrers.any? %><td><%= signup.referrer %></td><% end %>
         <td><div class="actions">
           <% if signup.status == "waiting" %>
             <%= button_to "Approve", approve_admin_signup_path(signup), method: :post %>

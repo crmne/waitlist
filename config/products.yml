@@ -18,7 +18,15 @@
 #                      import and again from their reminder (14)
 #   confirmation_reminders true to send at day 1 and day 7 before confirmation;
 #                      normally 14 days to confirm, extended for late reminders
-#   questions          optional multiple-choice questions; every answer optional
+#   questions          optional questions; every answer optional. Multiple
+#                      choice with options, or type: text for a short free
+#                      answer (one line, at most max_length characters, 200).
+#                      only_if: {question:, answer:} keeps an answer only
+#                      after that answer to an earlier choice question.
+#   signup_referrers   optional fixed classes of the page someone came from
+#                      (chatgpt, search, reddit...), worked out by the
+#                      product site and posted as referrer; a listed class
+#                      is saved with a new signup, anything else dropped
 #   signup_experiments optional fixed labels saved on new signups, for example:
 #                        headline-v1:
 #                          started_at: "2026-10-29T00:00:00Z"
@@ -64,4 +72,11 @@ example:
       options:
         - A friend
         - Search
+        - An AI assistant
         - Something else
+    - question: What did you ask it?
+      type: text
+      max_length: 200
+      only_if:
+        question: How did you hear about us?
+        answer: An AI assistant
